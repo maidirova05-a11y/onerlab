@@ -1,0 +1,12 @@
+# Secrets live in Vercel's own environment variables, never in the upload.
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.vercel
+prisma/dev.db
+
+# Camera originals: processed copies live in public/gallery.
+photos-in/

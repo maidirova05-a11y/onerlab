@@ -1,0 +1,507 @@
+@import 'tailwindcss';
+
+/* =============================================================================
+   OnerLab design tokens
+   =============================================================================
+   Colours are taken verbatim from the logo file
+   ("WhatsApp Image 2026-08-08 at 00.12.06.jpeg"). The two brand values were
+   sampled from the artwork itself rather than eyeballed:
+
+     • #FAC90A — mean of the "lab" badge pixels  -> primary CTA / highlights
+     • #5D5D5D — mean of the "öner" wordmark     -> secondary text, soft ink
+
+   Dark grey #333333 carries body copy and contrast, pure white #FFFFFF carries
+   the backgrounds. Yellow is rationed: CTAs and genuine highlights only.
+   ============================================================================= */
+@theme {
+  /* --- Brand ------------------------------------------------------------- */
+  --color-brand: #fac90a;
+  --color-brand-strong: #e5b400; /* hover / pressed */
+  --color-brand-soft: #fff4cc; /* tinted surfaces */
+  --color-brand-faint: #fffbee; /* barely-there section wash */
+
+  /* --- Ink --------------------------------------------------------------- */
+  --color-ink: #333333; /* headings + body, per brief */
+  --color-ink-soft: #5d5d5d; /* logo grey — secondary text */
+  --color-ink-muted: #7a7a7a;
+  --color-ink-faint: #9e9e9e;
+
+  /* --- Surfaces ---------------------------------------------------------- */
+  --color-canvas: #ffffff;
+  --color-canvas-alt: #f7f6f3; /* warm off-white, reads like paper */
+  --color-line: #e8e6e1;
+  --color-line-strong: #d8d5ce;
+
+  /* --- States ------------------------------------------------------------ */
+  --color-success: #2f7a4d;
+  --color-danger: #c0392b;
+
+  /* --- Typography -------------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Motion ------------------------------------------------------------ */
+  --ease-paint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Radii ------------------------------------------------------------- */
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+}
+
+/* =============================================================================
+   Base layer
+   ============================================================================= */
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Sticky header height + breathing room, so anchor links never land under it. */
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Prevents any decorative element from creating a horizontal scrollbar
+       on narrow phones — this is a mobile-first layout. */
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    /* A long Russian compound must never widen its column on a 360px phone. */
+    overflow-wrap: break-word;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible, on-brand focus ring for keyboard users on every interactive element. */
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: var(--color-ink);
+  }
+}
+
+/* =============================================================================
+   Utilities & decorative components
+   ============================================================================= */
+@layer utilities {
+  /*
+   * Canvas texture. A tiny inline SVG turbulence filter — no extra network
+   * request, no image asset — laid over a surface at very low opacity so the
+   * page reads like primed canvas rather than flat screen white.
+   */
+  .texture-canvas {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .texture-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  }
+
+  /* Screen-reader-only, but still focusable (used by the skip link). */
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /*
+   * Hand-painted underline behind a headline word. The skewed gradient block
+   * mimics a wide brush stroke without needing an image.
+   */
+  .brush-underline {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .brush-underline::after {
+    content: '';
+    position: absolute;
+    left: -0.12em;
+    right: -0.12em;
+    bottom: 0.02em;
+    height: 0.38em;
+    z-index: -1;
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--color-brand) 0%, transparent) 0%,
+      var(--color-brand) 6%,
+      var(--color-brand) 94%,
+      color-mix(in srgb, var(--color-brand) 0%, transparent) 100%
+    );
+    border-radius: 0.5em 1.2em 0.7em 1em;
+    transform: rotate(-0.8deg);
+  }
+
+  /* Soft paint blob used as a background accent. */
+  .paint-blob {
+    position: absolute;
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+    filter: blur(28px);
+    pointer-events: none;
+  }
+
+  /*
+   * The 18 blobs of the page-wide paint field.
+   *
+   * Kept in CSS rather than as inline style="" attributes on each span. Inline
+   * styles are paid for twice — once in the HTML and again in the RSC flight
+   * payload React ships to hydrate — whereas a class name costs a dozen bytes
+   * and the stylesheet is cached across navigations.
+   *
+   * Generated to match the BLOBS table in components/ui/PaintField.tsx; edit
+   * them together.
+   */
+  .paint-blob-0 {
+    top: 0.5%;
+    left: -10%;
+    width: clamp(240px, 34vw, 460px);
+    height: clamp(240px, 34vw, 460px);
+    background-color: var(--color-brand);
+    opacity: 0.26;
+    filter: blur(40px);
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+  }
+
+  .paint-blob-1 {
+    top: 3%;
+    right: -6%;
+    width: clamp(200px, 30vw, 420px);
+    height: clamp(200px, 30vw, 420px);
+    background-color: var(--color-ink-soft);
+    opacity: 0.05;
+    filter: blur(46px);
+    border-radius: 60% 40% 38% 62% / 45% 58% 42% 55%;
+  }
+
+  .paint-blob-2 {
+    top: 7%;
+    left: 38%;
+    width: clamp(150px, 20vw, 280px);
+    height: clamp(150px, 20vw, 280px);
+    background-color: var(--color-brand);
+    opacity: 0.13;
+    filter: blur(38px);
+    border-radius: 38% 62% 55% 45% / 60% 38% 62% 40%;
+  }
+
+  .paint-blob-3 {
+    top: 12%;
+    right: 8%;
+    width: clamp(180px, 24vw, 340px);
+    height: clamp(180px, 24vw, 340px);
+    background-color: var(--color-brand-soft);
+    opacity: 0.55;
+    filter: blur(44px);
+    border-radius: 52% 48% 44% 56% / 38% 60% 40% 62%;
+  }
+
+  .paint-blob-4 {
+    top: 17%;
+    left: -6%;
+    width: clamp(160px, 22vw, 300px);
+    height: clamp(160px, 22vw, 300px);
+    background-color: var(--color-brand);
+    opacity: 0.1;
+    filter: blur(42px);
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+  }
+
+  .paint-blob-5 {
+    top: 23%;
+    right: 32%;
+    width: clamp(130px, 17vw, 240px);
+    height: clamp(130px, 17vw, 240px);
+    background-color: var(--color-ink-soft);
+    opacity: 0.045;
+    filter: blur(36px);
+    border-radius: 60% 40% 38% 62% / 45% 58% 42% 55%;
+  }
+
+  .paint-blob-6 {
+    top: 28%;
+    left: 12%;
+    width: clamp(200px, 27vw, 380px);
+    height: clamp(200px, 27vw, 380px);
+    background-color: var(--color-brand);
+    opacity: 0.15;
+    filter: blur(48px);
+    border-radius: 38% 62% 55% 45% / 60% 38% 62% 40%;
+  }
+
+  .paint-blob-7 {
+    top: 34%;
+    right: -8%;
+    width: clamp(220px, 30vw, 420px);
+    height: clamp(220px, 30vw, 420px);
+    background-color: var(--color-brand-soft);
+    opacity: 0.5;
+    filter: blur(46px);
+    border-radius: 52% 48% 44% 56% / 38% 60% 40% 62%;
+  }
+
+  .paint-blob-8 {
+    top: 40%;
+    left: 46%;
+    width: clamp(140px, 18vw, 250px);
+    height: clamp(140px, 18vw, 250px);
+    background-color: var(--color-brand);
+    opacity: 0.09;
+    filter: blur(34px);
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+  }
+
+  .paint-blob-9 {
+    top: 45%;
+    left: -9%;
+    width: clamp(190px, 26vw, 360px);
+    height: clamp(190px, 26vw, 360px);
+    background-color: var(--color-brand);
+    opacity: 0.19;
+    filter: blur(44px);
+    border-radius: 60% 40% 38% 62% / 45% 58% 42% 55%;
+  }
+
+  .paint-blob-10 {
+    top: 51%;
+    right: 14%;
+    width: clamp(150px, 20vw, 280px);
+    height: clamp(150px, 20vw, 280px);
+    background-color: var(--color-ink-soft);
+    opacity: 0.05;
+    filter: blur(40px);
+    border-radius: 38% 62% 55% 45% / 60% 38% 62% 40%;
+  }
+
+  .paint-blob-11 {
+    top: 57%;
+    left: 24%;
+    width: clamp(170px, 23vw, 310px);
+    height: clamp(170px, 23vw, 310px);
+    background-color: var(--color-brand-soft);
+    opacity: 0.45;
+    filter: blur(42px);
+    border-radius: 52% 48% 44% 56% / 38% 60% 40% 62%;
+  }
+
+  .paint-blob-12 {
+    top: 63%;
+    right: -7%;
+    width: clamp(210px, 28vw, 400px);
+    height: clamp(210px, 28vw, 400px);
+    background-color: var(--color-brand);
+    opacity: 0.16;
+    filter: blur(48px);
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+  }
+
+  .paint-blob-13 {
+    top: 69%;
+    left: 4%;
+    width: clamp(140px, 19vw, 260px);
+    height: clamp(140px, 19vw, 260px);
+    background-color: var(--color-brand);
+    opacity: 0.11;
+    filter: blur(36px);
+    border-radius: 60% 40% 38% 62% / 45% 58% 42% 55%;
+  }
+
+  .paint-blob-14 {
+    top: 75%;
+    right: 36%;
+    width: clamp(160px, 21vw, 290px);
+    height: clamp(160px, 21vw, 290px);
+    background-color: var(--color-ink-soft);
+    opacity: 0.04;
+    filter: blur(38px);
+    border-radius: 38% 62% 55% 45% / 60% 38% 62% 40%;
+  }
+
+  .paint-blob-15 {
+    top: 81%;
+    left: -8%;
+    width: clamp(200px, 27vw, 370px);
+    height: clamp(200px, 27vw, 370px);
+    background-color: var(--color-brand-soft);
+    opacity: 0.5;
+    filter: blur(46px);
+    border-radius: 52% 48% 44% 56% / 38% 60% 40% 62%;
+  }
+
+  .paint-blob-16 {
+    top: 87%;
+    right: 6%;
+    width: clamp(180px, 25vw, 330px);
+    height: clamp(180px, 25vw, 330px);
+    background-color: var(--color-brand);
+    opacity: 0.14;
+    filter: blur(44px);
+    border-radius: 46% 54% 62% 38% / 52% 44% 56% 48%;
+  }
+
+  .paint-blob-17 {
+    top: 93%;
+    left: 30%;
+    width: clamp(150px, 20vw, 270px);
+    height: clamp(150px, 20vw, 270px);
+    background-color: var(--color-brand);
+    opacity: 0.09;
+    filter: blur(40px);
+    border-radius: 60% 40% 38% 62% / 45% 58% 42% 55%;
+  }
+
+  /*
+   * Alternating section tint.
+   *
+   * Replaces a flat `bg-canvas-alt`. A solid fill starts and stops on an exact
+   * pixel row, and stacking those down the page is what chopped it into bands.
+   * This fades in and out instead, so the tint still gives the section its own
+   * weight but no edge is ever visible.
+   *
+   * It also stays translucent at its strongest (0.82), which lets the paint
+   * field behind it and the brush trail above it both read through.
+   */
+  .section-wash {
+    background-image: linear-gradient(
+      180deg,
+      rgba(247, 246, 243, 0) 0%,
+      rgba(247, 246, 243, 0.82) 16%,
+      rgba(247, 246, 243, 0.82) 84%,
+      rgba(247, 246, 243, 0) 100%
+    );
+  }
+}
+
+/* =============================================================================
+   Opening screen
+   =============================================================================
+   The height lives in a custom property because TWO elements must agree on it
+   exactly: the section itself, and the footage inside the masked logo, which is
+   pinned to the same rectangle so the mark reads as a window onto the backdrop
+   rather than a separately-cropped copy. `min-height` on the section alone
+   silently broke that on short viewports — the section grew to 560px while the
+   logo's video stayed at 100svh. Declaring it once removes the chance to drift. */
+.intro-screen {
+  --intro-h: max(100svh, 560px);
+  height: var(--intro-h);
+}
+
+/* =============================================================================
+   Opening-screen stagger
+   =============================================================================
+   The copy under the mark rises in after the brush has drawn it, so the screen
+   resolves in one order: name, then promise, then the call to action.
+
+   Plain CSS animations rather than the IntersectionObserver <Reveal> used lower
+   down the page — this content is above the fold and visible on arrival, so
+   there is nothing to observe, and waiting for JS would delay the first paint
+   of the very thing the visitor came to read.
+
+   `backwards` fill applies the from-state during the delay; without it each
+   line would flash at full opacity before its turn. */
+.intro-rise {
+  animation: intro-rise 0.8s var(--ease-paint) backwards;
+}
+
+.intro-rise--1 { animation-delay: 1.15s; }
+.intro-rise--2 { animation-delay: 1.35s; }
+.intro-rise--3 { animation-delay: 1.55s; }
+.intro-rise--4 { animation-delay: 1.9s; }
+
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-rise {
+    animation: none;
+  }
+}
+
+/* =============================================================================
+   Scroll-reveal
+   =============================================================================
+   Driven by the <Reveal> component's IntersectionObserver. Elements start
+   slightly low and transparent; adding [data-revealed] lets them settle. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-paint),
+    transform 0.7s var(--ease-paint);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal][data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Respect the OS "reduce motion" setting: show everything immediately and
+   disable smooth scrolling. Accessibility, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* JS disabled? Never hide content behind an animation that will not run. */
+.no-js [data-reveal] {
+  opacity: 1;
+  transform: none;
+}

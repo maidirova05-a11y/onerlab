@@ -1,0 +1,68 @@
+// =============================================================================
+// OnerLab — Prisma schema
+// =============================================================================
+// Using an ORM is itself a security control: Prisma always sends parameterised
+// queries, so user input can never be concatenated into SQL. Combined with the
+// strict column types below this closes off SQL-injection at the data layer.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Pooled connection (PgBouncer) — used for ordinary queries at runtime.
+  url       = env("DATABASE_URL")
+  // Unpooled connection — migrations only. DDL over a transaction pooler is
+  // unreliable, so Prisma is given the direct endpoint for `migrate`.
+  directUrl = env("DIRECT_URL")
+}
+
+/// Lifecycle of a trial-lesson request as the sales manager works through it.
+enum LeadStatus {
+  new        // just submitted, nobody has called yet
+  contacted  // manager reached the parent
+  scheduled  // trial lesson booked
+  won        // converted into a paying student
+  lost       // declined / unreachable
+  spam       // flagged manually
+}
+
+/// A trial-lesson request submitted through the landing page form.
+model Lead {
+  id           String     @id @default(cuid())
+
+  /// Parent's name — "Имя родителя".
+  parentName   String     @db.VarChar(80)
+
+  /// Child's name and age as one free-text field — "Имя и возраст ребенка".
+  childNameAge String     @db.VarChar(120)
+
+  /// Which school the child attends — "из какой школы ученик".
+  /// OPTIONAL: it is useful for grouping and logistics, but every extra
+  /// required box on a lead form costs conversions, so an unsure parent can
+  /// skip it rather than abandon the form.
+  school       String?    @db.VarChar(120)
+
+  /// Phone / WhatsApp, stored NORMALISED as E.164 (+77001234567) so that
+  /// duplicate detection and CRM export do not depend on how it was typed.
+  phone        String     @db.VarChar(20)
+
+  status       LeadStatus @default(new)
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // --- Operational metadata (not collected from the form) --------------------
+  // Kept for abuse investigation and attribution. `ipHash` is a salted SHA-256
+  // digest, never the raw IP — we get spam-forensics value without storing a
+  // directly identifying network address.
+  ipHash       String?    @db.VarChar(64)
+  userAgent    String?    @db.VarChar(255)
+  source       String?    @db.VarChar(64)
+
+  @@index([status, createdAt])
+  @@index([phone])
+  @@map("leads")
+}

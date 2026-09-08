@@ -1,0 +1,169 @@
+/*
+ * MaskedHeading — media showing through the letterforms.
+ *
+ * The text is laid out twice. Once as invisible HTML (`__measure`) which does
+ * the real line-breaking and gives us pixel positions, and once as SVG <text>
+ * inside a <clipPath>, positioned from those measurements. The media sits under
+ * the clip path, so it is only painted where the glyphs are.
+ *
+ * Doing it this way — rather than `background-clip: text` — is what lets the
+ * media move independently of the type (parallax and drift) and keeps a real,
+ * selectable, crawlable text node in the DOM.
+ */
+
+.masked-heading {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-wrap: balance;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The layout pass. Transparent rather than `visibility: hidden` or `opacity: 0`
+ * because it must still be laid out, still be selectable, and still be read by
+ * screen readers and crawlers — it is the only real text on the page.
+ */
+.masked-heading__measure {
+  color: transparent;
+}
+
+.masked-heading__word {
+  display: inline-block;
+  white-space: pre;
+}
+
+.masked-heading__word:not(:last-child)::after {
+  content: ' ';
+}
+
+/* Zero-size marker used to read each word's baseline offset. */
+.masked-heading__baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+}
+
+.masked-heading__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.masked-heading__reveal {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.masked-heading__clip {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.masked-heading__media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  will-change: transform, filter;
+}
+
+.masked-heading__source {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * The "brush" reveal.
+ *
+ * A plain wipe is a hard vertical edge sweeping across — it reads as a shutter,
+ * not as paint. This masks the reveal layer with a steeply angled gradient
+ * whose leading edge is soft over ~14%, so colour arrives the way it does off a
+ * loaded brush: at an angle, wet edge first, rather than as a straight line.
+ *
+ * `--brush` is driven from 0 to 1 by GSAP. Declaring it with @property lets the
+ * browser interpolate it on the compositor instead of re-parsing the gradient
+ * string on the main thread every frame.
+ */
+@property --brush {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/*
+ * Default is the FINISHED value, not 0%.
+ *
+ * 0% masks the letters away completely. If the JS never runs — disabled, a
+ * chunk that fails to load, an error during hydration — a 0% default would
+ * leave the studio name permanently invisible. The component sets 0% itself
+ * immediately before it animates, so the hidden state only ever exists when
+ * something is actually there to undo it.
+ */
+.masked-heading__reveal--brush {
+  --brush: 120%;
+  --mh-duration: 2.1s;
+  -webkit-mask-image: linear-gradient(
+    104deg,
+    #000 calc(var(--brush) - 14%),
+    rgba(0, 0, 0, 0.55) calc(var(--brush) - 6%),
+    transparent var(--brush)
+  );
+  mask-image: linear-gradient(
+    104deg,
+    #000 calc(var(--brush) - 14%),
+    rgba(0, 0, 0, 0.55) calc(var(--brush) - 6%),
+    transparent var(--brush)
+  );
+}
+
+/*
+ * Anyone who has asked the OS to reduce motion gets the finished state
+ * immediately — no wipe, no drift. The JS honours this too; this is the
+ * belt-and-braces half so a failed hydration cannot leave a hidden heading.
+ */
+/*
+ * The stroke itself.
+ *
+ * A CSS animation rather than a GSAP tween, and deliberately so. GSAP drives
+ * everything from requestAnimationFrame, which browsers suspend in a background
+ * tab — a tween created there never ticks, and since 0% masks the letters away
+ * entirely, the studio name can sit invisible. `forwards` makes the browser
+ * responsible for the end state instead, so the heading always resolves to
+ * visible whether or not a single frame was ever rendered.
+ *
+ * GSAP still drives the rise/wipe/fade reveals, which need per-word staggering
+ * that CSS cannot express as cleanly.
+ */
+@keyframes mh-brush-on {
+  from {
+    --brush: 0%;
+  }
+  to {
+    --brush: 120%;
+  }
+}
+
+.masked-heading__reveal--brush.is-painting {
+  animation: mh-brush-on var(--mh-duration) cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masked-heading__media {
+    will-change: auto;
+  }
+
+  /* Skip the stroke entirely; the name is simply already painted. */
+  .masked-heading__reveal--brush.is-painting {
+    animation: none;
+    --brush: 120%;
+  }
+}

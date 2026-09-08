@@ -1,0 +1,220 @@
+/*
+ * MaskedLogo — footage showing through the OnerLab wordmark.
+ *
+ * The trick is TWO masks on TWO nested elements:
+ *
+ *   1. url(--ml-logo)  — the wordmark's own alpha channel, on the outer box.
+ *                        The master PNG is already cut out, so it works as a
+ *                        mask with no tracing.
+ *   2. a linear-gradient — the brush sweep, on the inner box.
+ *
+ * Nesting means a pixel survives only where BOTH allow it: inside the
+ * letterforms, AND behind the advancing brush edge. See the long note further
+ * down for why this is nested rather than composited on one element.
+ *
+ * Doing it with masks rather than an SVG <clipPath> matters here — the logo is
+ * a raster, and there is no vector outline of it in the project to clip with.
+ */
+
+/*
+ * `pointer-events: none` on the whole mark, and again on the footage below.
+ *
+ * The footage is `position: fixed; inset: 0`, so its HIT AREA is the entire
+ * viewport even though the mask paints only the letterforms — masks affect
+ * painting, not hit-testing. Without this it silently swallowed every tap on
+ * the page. The mark is role="img" and has nothing to click, so switching the
+ * whole subtree off is both the fix and the correct semantics.
+ */
+.masked-logo {
+  pointer-events: none;
+  position: relative;
+  display: block;
+  width: 100%;
+  /* Matches the mask's cropped ink bounds so `contain` leaves no dead space —
+     which is also what keeps the badge's percentage box from drifting. */
+  aspect-ratio: 1552 / 734;
+  margin-inline: auto;
+}
+
+/*
+ * Registered so the browser can interpolate the sweep on the compositor.
+ * Without @property a custom property animates as a discrete string swap.
+ */
+@property --ml-brush {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/*
+ * TWO masks, on TWO nested elements — deliberately not two layers on one.
+ *
+ * The obvious implementation is a single element with `mask-image: url(logo),
+ * linear-gradient(...)` and `mask-composite: intersect`. It renders a faint veil
+ * of the footage across the WHOLE box: a visible rectangle around the mark.
+ * Verified by elimination — collapsing to a single mask layer makes it vanish,
+ * while the mask PNG itself is provably clean (68.5% alpha 0, 31.1% alpha 255,
+ * corners exactly 0) and swapping the <video> for an <img> changes nothing.
+ *
+ * The cause is the composite operator: `mask-composite: intersect` alongside the
+ * legacy `-webkit-mask-composite: source-in` does not resolve to a true
+ * intersection. Nesting sidesteps the operator entirely — the outer element
+ * clips to the letterforms, the inner one sweeps the brush across, and the
+ * intersection falls out of the nesting instead of being asked for.
+ */
+.masked-logo__media {
+  position: absolute;
+  inset: 0;
+
+  /*
+    No `overflow: hidden` here on purpose. The footage inside is sized to the
+    whole viewport so it lines up with the backdrop (see __source), and clipping
+    it to the logo box would defeat that. The mask already does the clipping.
+  */
+  -webkit-mask-image: var(--ml-logo);
+  mask-image: var(--ml-logo);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/*
+ * The brush sweep. Also a single mask layer, so no compositing operator here
+ * either.
+ *
+ * Default is the FINISHED value. If the JS never runs — disabled, a chunk that
+ * fails to load, an error during hydration — the mark is simply there. The
+ * hidden state is applied by script, and only while it is being undone.
+ */
+.masked-logo__sweep {
+  position: absolute;
+  inset: 0;
+  --ml-brush: 120%;
+
+  -webkit-mask-image: linear-gradient(
+    104deg,
+    #000 calc(var(--ml-brush) - 16%),
+    rgba(0, 0, 0, 0.5) calc(var(--ml-brush) - 7%),
+    transparent var(--ml-brush)
+  );
+  mask-image: linear-gradient(
+    104deg,
+    #000 calc(var(--ml-brush) - 16%),
+    rgba(0, 0, 0, 0.5) calc(var(--ml-brush) - 7%),
+    transparent var(--ml-brush)
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+ /*
+  * The footage is pinned to the VIEWPORT, not to the logo box.
+  *
+  * Both this and the backdrop then resolve `object-fit: cover` against exactly
+  * the same rectangle, so they are the same frame at the same scale. The mark
+  * stops being a small separately-cropped copy of the video and becomes a
+  * window cut through to the one playing behind it — which is the whole point
+  * of the effect.
+  *
+  * `fixed` is safe here: no ancestor sets transform/filter/perspective, so this
+  * resolves against the viewport, and the hero is exactly one viewport tall
+  * sitting at the top of the page.
+  */
+.masked-logo__source {
+  position: fixed;
+  /* `inset` (not width:100vw) so this matches the section's width — 100vw
+     includes the scrollbar gutter and would shift the frame sideways. */
+  inset: 0;
+  display: block;
+  height: var(--intro-h, 100svh);
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * The yellow "lab" badge, kept as itself.
+ *
+ * Masking footage through the WHOLE wordmark turned the badge into an
+ * anonymous video-filled rectangle — it read as a rendering glitch rather than
+ * part of the mark, and the brand lost its one piece of yellow. So the badge is
+ * cropped out of the master logo and composited back on top.
+ *
+ * Its "lab" letters are punched OUT of the yellow rather than painted white, so
+ * the backdrop shows through them — the same treatment as the ornament and the
+ * slash in the "e", which are holes in the mask for the same reason.
+ *
+ * Its box is the badge's exact position inside the 391x190 wordmark, expressed
+ * as percentages. That works because the container's aspect-ratio matches the
+ * wordmark's, so `mask-size: contain` fills it edge to edge with no letterboxing
+ * for the percentages to drift against.
+ */
+.masked-logo__badge {
+  position: absolute;
+  left: 58.312%;
+  top: 57.357%;
+  width: 40.142%;
+  height: 42.643%;
+  object-fit: contain;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/*
+ * Timed to the stroke rather than masked by it. The badge sits at the right-
+ * hand end of the mark, so the brush reaches it last; a short fade starting
+ * ~60% through the sweep lands at the moment the stroke arrives. Masking it
+ * with its own gradient would have swept across the badge's own width instead,
+ * which is a different, faster motion and visibly out of step.
+ */
+@keyframes ml-badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(6%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.masked-logo__badge.is-painting {
+  animation: ml-badge-in calc(var(--ml-duration, 2.1s) * 0.34) ease-out backwards;
+  animation-delay: calc(var(--ml-duration, 2.1s) * 0.6);
+}
+
+/* The stroke. `forwards` makes the browser own the end state, so the logo
+   resolves to visible even if not a single frame was ever rendered. */
+@keyframes ml-paint-on {
+  from {
+    --ml-brush: 0%;
+  }
+  to {
+    --ml-brush: 120%;
+  }
+}
+
+.masked-logo__sweep.is-painting {
+  animation: ml-paint-on var(--ml-duration, 2.1s) cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masked-logo__sweep.is-painting {
+    animation: none;
+    --ml-brush: 120%;
+  }
+
+  .masked-logo__badge.is-painting {
+    animation: none;
+  }
+
+  .masked-logo__source {
+    will-change: auto;
+  }
+}
