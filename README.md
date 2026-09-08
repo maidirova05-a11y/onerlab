@@ -263,3 +263,20 @@ changes.
 - [ ] Reverse proxy **overwrites** `X-Forwarded-For` (`proxy_set_header X-Forwarded-For
       $remote_addr;`) — appending lets a client spoof it and dodge the rate limiter
 - [ ] `LOG_LEVEL=info` and logs are shipped somewhere durable
+
+## Деплой
+
+Проект связан с этим репозиторием на Vercel: пуш в `main` выкатывает
+продакшен на https://onerlab.kz, пул-реквест собирает preview-ссылку.
+
+Сборка запускает `prisma generate && prisma migrate deploy && next build`
+(см. `vercel.json`), поэтому новая миграция применяется к базе сама.
+
+Секреты живут только в переменных окружения проекта Vercel — в репозитории
+их нет. Список требуемых ключей: `.env.example`.
+
+Ручной деплой, если он всё же нужен:
+
+```bash
+npx vercel deploy --prod
+```
