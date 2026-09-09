@@ -198,14 +198,14 @@ export const gallery = {
    * screen reader reads aloud and what Google Images indexes.
    */
   items: [
-    { caption: 'Натюрморт, акварель · 9 лет', image: '/gallery/work-1.svg' },
-    { caption: 'Занятие в студии', image: '/gallery/work-2.svg' },
-    { caption: 'Пейзаж, гуашь · 12 лет', image: '/gallery/work-3.svg' },
-    { caption: 'Наши педагоги', image: '/gallery/work-4.svg' },
-    { caption: 'Сюжетная композиция · 11 лет', image: '/gallery/work-5.svg' },
-    { caption: 'Подготовка к выставке', image: '/gallery/work-6.svg' },
-    { caption: 'Портрет, акрил · 14 лет', image: '/gallery/work-7.svg' },
-    { caption: 'Первые работы новичков', image: '/gallery/work-8.svg' },
+    { caption: 'Занятие живописью в студии OnerLab, Астана', image: '/gallery/photo-01.jpg' },
+    { caption: 'Пейзаж, гуашь — работа ученика', image: '/gallery/photo-02.jpg' },
+    { caption: 'Готовые работы учеников на выставке', image: '/gallery/photo-03.jpg' },
+    { caption: 'Сюжетная композиция, акрил — работа ученика', image: '/gallery/photo-04.jpg' },
+    { caption: 'Натюрморт, гуашь — работа ученика', image: '/gallery/photo-05.jpg' },
+    { caption: 'Педагог студии показывает постановку натюрморта', image: '/gallery/photo-06.jpg' },
+    { caption: 'Творческий процесс: ребёнок рисует акварелью', image: '/gallery/photo-07.jpg' },
+    { caption: 'Атмосфера студии OnerLab во время занятия', image: '/gallery/photo-08.jpg' },
   ],
 } as const;
 
@@ -331,6 +331,8 @@ export const meta = {
     'живопись для детей Астана',
     'художественная школа Астана',
     'рисование для детей',
+    'изостудия Астана',
+    'кружок рисования для детей',
     'OnerLab',
   ],
 } as const;
