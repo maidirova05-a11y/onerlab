@@ -166,6 +166,41 @@ if (env.ADMIN_SESSION_SECRET.length > 0 && env.ADMIN_SESSION_SECRET.length < 32)
   );
 }
 
+/**
+ * The canonical origin is the one value that, when wrong, breaks the site for
+ * search completely and silently.
+ *
+ * It carries a localhost default so `npm run dev` works with no .env at all.
+ * In production that default is a disaster rather than a convenience: the
+ * value is baked into `metadataBase`, every `<link rel="canonical">`, the
+ * sitemap, the manifest and robots.txt — and all of those are PRERENDERED AT
+ * BUILD TIME, because `NEXT_PUBLIC_*` is inlined into the bundle. A deploy
+ * that forgot the variable would hand Google and Yandex a sitemap full of
+ * `http://localhost:3000/...` and a robots.txt pointing at it. The site could
+ * then be neither verified in Search Console nor indexed at all, and nothing
+ * about the running page would look wrong.
+ *
+ * So this is a hard failure at build time, not a warning. There is no useful
+ * production behaviour to degrade to, and the failure it prevents is invisible
+ * until someone wonders why the site never appeared in search.
+ *
+ * Echoing the value is safe here, unlike the message above: this variable is
+ * `NEXT_PUBLIC_`, so it already ships to every visitor in the client bundle.
+ */
+if (isProduction) {
+  const site = env.NEXT_PUBLIC_SITE_URL;
+  const { hostname } = new URL(site);
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+
+  if (!site.startsWith('https://') || isLocal) {
+    throw new Error(
+      `[env] NEXT_PUBLIC_SITE_URL must be the public https:// origin in production, got "${site}". ` +
+        'Canonical URLs, the sitemap, the manifest and robots.txt are all built from it, ' +
+        'so a wrong value silently keeps the site out of search.',
+    );
+  }
+}
+
 if (isProduction && !captchaEnabled) {
   // Loud, non-fatal warning: shipping the public form without bot protection is
   // a decision that should be made deliberately, never by accident.
