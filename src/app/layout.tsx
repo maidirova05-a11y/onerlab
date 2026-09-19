@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Manrope } from 'next/font/google';
 
+import { JsonLd } from '@/components/seo/JsonLd';
 import { BrushLayer } from '@/components/ui/BrushLayer';
 import { PaintField } from '@/components/ui/PaintField';
 
-import { contacts, faq, meta } from '@/content/site';
+import { meta } from '@/content/site';
 import { env } from '@/lib/env';
+import { siteGraph } from '@/lib/seo/structured-data';
 
 import './globals.css';
 
@@ -124,122 +126,6 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-/**
- * JSON-LD so Google can show the academy as a local business with a price,
- * an address and a phone number. Serialised through `JSON.stringify` of a
- * typed object — never string-concatenated with user input — so there is no
- * way to break out of the script tag.
- */
-function structuredData() {
-  return {
-    '@context': 'https://schema.org',
-    /*
-     * A @graph, not a single node.
-     *
-     * Two separate things need describing: the studio (an entity Google can put
-     * in a local result) and the questions page (which can render as expandable
-     * FAQ rows). One object cannot be both, and emitting two <script> blocks
-     * risks them disagreeing. A graph states both once, with `@id` so the FAQ
-     * can point back at the organisation that answers.
-     */
-    '@graph': [
-      {
-        '@id': `${siteUrl}/#organization`,
-    /*
-     * Two types on purpose. EducationalOrganization describes what the studio
-     * IS; LocalBusiness is what Google's local surfaces actually query against
-     * for "школа рисования рядом" style searches. Declaring both lets one
-     * entity answer both intents.
-     */
-    '@type': ['EducationalOrganization', 'LocalBusiness'],
-    name: 'OnerLab',
-    description: meta.description,
-    url: siteUrl,
-    logo: `${siteUrl}/logo.png`,
-    // The wide card, not the square logo — Google prefers >=1200px wide images
-    // and will not use a small square for a rich result.
-    image: `${siteUrl}/og-image.jpg`,
-    priceRange: '5000–21000 ₸',
-    currenciesAccepted: 'KZT',
-    /* Who the classes are for. Feeds "для детей"/age-qualified queries. */
-    audience: {
-      '@type': 'EducationalAudience',
-      educationalRole: 'student',
-      audienceType: 'Дети 1–8 классов',
-    },
-    telephone: contacts.phoneE164,
-    sameAs: [contacts.instagramUrl],
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: contacts.city,
-      addressCountry: 'KZ',
-    },
-    areaServed: contacts.city,
-    hasOfferCatalog: {
-      '@type': 'OfferCatalog',
-      name: 'Курсы живописи для детей',
-      itemListElement: [
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Course',
-            name: 'Живопись и композиция',
-            description:
-              'Офлайн-курс живописи для детей 1–8 классов: 1,5 часа, 2 раза в неделю, все материалы включены.',
-            provider: { '@id': `${siteUrl}/#organization` },
-            inLanguage: 'ru-RU',
-            /*
-             * Course rich results need a concrete instance, not just a name.
-             * Every value here is a fact stated on the page: offline, weekends,
-             * twice a week, 1.5 hours.
-             */
-            hasCourseInstance: {
-              '@type': 'CourseInstance',
-              courseMode: 'onsite',
-              location: { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: contacts.city, addressCountry: 'KZ' } },
-              courseWorkload: 'PT1H30M',
-              courseSchedule: {
-                '@type': 'Schedule',
-                repeatFrequency: 'P1W',
-                repeatCount: 2,
-                byDay: ['https://schema.org/Saturday', 'https://schema.org/Sunday'],
-                duration: 'PT1H30M',
-              },
-            },
-          },
-          price: '21000',
-          priceCurrency: 'KZT',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Пробный урок',
-          price: '5000',
-          priceCurrency: 'KZT',
-        },
-      ],
-    },
-      },
-      {
-        /*
-         * Generated from the SAME `faq.items` the visible section renders, so
-         * the markup and the page can never drift. Google drops FAQ rich
-         * results — and can flag the site — when the structured answers do not
-         * appear verbatim in the visible HTML.
-         */
-        '@type': 'FAQPage',
-        '@id': `${siteUrl}/#faq`,
-        inLanguage: 'ru-RU',
-        about: { '@id': `${siteUrl}/#organization` },
-        mainEntity: faq.items.map((item) => ({
-          '@type': 'Question',
-          name: item.q,
-          acceptedAnswer: { '@type': 'Answer', text: item.a },
-        })),
-      },
-    ],
-  };
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${inter.variable} ${manrope.variable}`}>
@@ -286,33 +172,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">{children}</div>
 
         {/*
-          Structured data for Google (organisation, courses, prices).
-
-          No `nonce` prop on purpose. A <script type="application/ld+json"> is a
-          DATA BLOCK — the HTML parser returns early when preparing it, so it is
-          never executed and CSP's script-src is never consulted for it.
-
-          `suppressHydrationWarning` is required, and the reason is subtle. The
-          nonce ends up mismatched no matter what we pass:
-
-            • Server HTML for this tag carries no nonce (verified in the DOM).
-            • On the client React applies the nonce it was handed via
-              `hydrateRoot({ nonce })` to any <script> it renders.
-            • And per the CSP spec the browser blanks the nonce *content
-              attribute* right after parsing — keeping the value only on the IDL
-              property — so that a CSS attribute selector cannot exfiltrate it.
-
-          So React compares its client-side `nonce="…"` against the DOM's `""`
-          and reports a mismatch on every load. The difference is meaningless for
-          a data block, so we tell React not to diff this element rather than
-          leaving a permanent hydration error in the console.
+          SITE-WIDE structured data only: who runs this site (the studio) and
+          what the site is. Everything that is true of ONE page — its WebPage
+          node, its breadcrumb, the FAQ, the gallery — is emitted by that page
+          instead. See the header of `lib/seo/structured-data.ts` for why:
+          emitting the FAQ from here put ten questions in the markup of
+          /privacy, a page that shows none of them.
         */}
-        <script
-          type="application/ld+json"
-          suppressHydrationWarning
-          // Safe: the argument is a locally-defined object literal, not user data.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
-        />
+        <JsonLd data={siteGraph()} />
       </body>
     </html>
   );
