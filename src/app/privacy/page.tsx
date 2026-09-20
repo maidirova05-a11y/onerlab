@@ -4,14 +4,36 @@ import Link from 'next/link';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { Container } from '@/components/ui/Container';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { contacts } from '@/content/site';
+import { env } from '@/lib/env';
+import { privacyGraph } from '@/lib/seo/structured-data';
+
+const siteUrl = env.NEXT_PUBLIC_SITE_URL;
+const PAGE_TITLE = 'Политика конфиденциальности';
+const PAGE_DESCRIPTION =
+  'Как OnerLab собирает, использует и защищает персональные данные, которые вы оставляете в форме записи на пробный урок.';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
-  title: 'Политика конфиденциальности',
-  description:
-    'Как OnerLab собирает, использует и защищает персональные данные, которые вы оставляете в форме записи на пробный урок.',
+  title: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
   robots: { index: true, follow: true },
+  openGraph: {
+    type: 'article',
+    locale: 'ru_RU',
+    siteName: 'OnerLab',
+    url: `${siteUrl}/privacy`,
+    title: `${PAGE_TITLE} | OnerLab`,
+    description: PAGE_DESCRIPTION,
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'OnerLab — школа живописи для детей в Астане', type: 'image/jpeg' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${PAGE_TITLE} | OnerLab`,
+    description: PAGE_DESCRIPTION,
+    images: ['/og-image.jpg'],
+  },
 };
 
 /**
@@ -144,6 +166,13 @@ export default function PrivacyPage() {
       </main>
 
       <Footer />
+
+      {/*
+        Just a page and its breadcrumb. Notably NOT the FAQ — this page shows no
+        questions, so claiming an FAQPage here would be markup that contradicts
+        the rendered HTML.
+      */}
+      <JsonLd data={privacyGraph({ title: PAGE_TITLE, description: PAGE_DESCRIPTION })} />
     </>
   );
 }
