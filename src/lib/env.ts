@@ -37,6 +37,42 @@ const numeric = (fallback: number) =>
     .transform((value) => (value === undefined || value === '' ? fallback : Number(value)))
     .pipe(z.number().int().positive());
 
+/**
+ * The canonical public origin, resolved before validation.
+ *
+ * Resolution order, and why each step exists:
+ *
+ *  1. `NEXT_PUBLIC_SITE_URL` — what the operator set. Always wins.
+ *
+ *  2. `VERCEL_PROJECT_PRODUCTION_URL` — the project's PRODUCTION domain, which
+ *     Vercel injects into every build and every runtime, including preview
+ *     deployments (where it still names the production domain rather than the
+ *     preview's own host). This is the step that makes a deploy which forgot
+ *     step 1 produce correct canonicals instead of failing the build — or,
+ *     worse, silently advertising localhost to Google.
+ *
+ *     Deliberately NOT `VERCEL_URL`: that is the unique per-deployment host
+ *     (onerlab-a1b2c3.vercel.app). Baking it into canonicals, the sitemap and
+ *     robots.txt would point search engines at an address that changes on
+ *     every single push.
+ *
+ *  3. localhost — so `npm run dev` works with no .env at all. The guard further
+ *     down refuses to let this one reach production.
+ *
+ * Trailing slashes are stripped here rather than being rejected, because this
+ * value is concatenated with paths all over the metadata layer and `//privacy`
+ * is a different URL from `/privacy` as far as a crawler is concerned.
+ */
+function resolveSiteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, '');
+
+  const vercelProduction = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelProduction) return `https://${vercelProduction.replace(/\/+$/, '')}`;
+
+  return 'http://localhost:3000';
+}
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
@@ -49,7 +85,7 @@ const envSchema = z.object({
   // serves traffic does not need it.
   DIRECT_URL: z.string().url().optional().or(z.literal('')).default(''),
 
-  NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_SITE_URL: z.string().url(),
   ALLOWED_ORIGINS: csvList,
 
   CAPTCHA_PROVIDER: z.enum(['turnstile', 'recaptcha', 'none']).default('none'),
@@ -95,7 +131,7 @@ const parsed = envSchema.safeParse({
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
   DIRECT_URL: process.env.DIRECT_URL,
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SITE_URL: resolveSiteUrl(),
   ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS,
   CAPTCHA_PROVIDER: process.env.CAPTCHA_PROVIDER,
   NEXT_PUBLIC_CAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
@@ -167,36 +203,40 @@ if (env.ADMIN_SESSION_SECRET.length > 0 && env.ADMIN_SESSION_SECRET.length < 32)
 }
 
 /**
- * The canonical origin is the one value that, when wrong, breaks the site for
- * search completely and silently.
+ * Last-resort guard on the canonical origin.
  *
- * It carries a localhost default so `npm run dev` works with no .env at all.
- * In production that default is a disaster rather than a convenience: the
- * value is baked into `metadataBase`, every `<link rel="canonical">`, the
- * sitemap, the manifest and robots.txt — and all of those are PRERENDERED AT
- * BUILD TIME, because `NEXT_PUBLIC_*` is inlined into the bundle. A deploy
- * that forgot the variable would hand Google and Yandex a sitemap full of
- * `http://localhost:3000/...` and a robots.txt pointing at it. The site could
- * then be neither verified in Search Console nor indexed at all, and nothing
- * about the running page would look wrong.
+ * `resolveSiteUrl()` above already covers the realistic case: on Vercel the
+ * project's production domain is always present, so a deploy that forgot to
+ * set NEXT_PUBLIC_SITE_URL still gets a correct origin and the build does not
+ * fail. This check exists for the case that fallback cannot cover — production
+ * on some other host, with nothing configured at all.
  *
- * So this is a hard failure at build time, not a warning. There is no useful
- * production behaviour to degrade to, and the failure it prevents is invisible
- * until someone wonders why the site never appeared in search.
+ * It stays a hard error rather than a warning because of what it prevents. The
+ * origin is baked into `metadataBase`, every `<link rel="canonical">`, the
+ * sitemap, the manifest and robots.txt, all of which are PRERENDERED AT BUILD
+ * TIME. Shipping `http://localhost:3000` there hands Google and Yandex a
+ * sitemap of dead URLs and a canonical pointing at the visitor's own machine.
+ * Nothing about the running site would look wrong; it would simply never
+ * appear in search, and undoing that takes weeks of recrawling.
  *
- * Echoing the value is safe here, unlike the message above: this variable is
- * `NEXT_PUBLIC_`, so it already ships to every visitor in the client bundle.
+ * A warning would scroll past in a build log. This is the one misconfiguration
+ * worth refusing to ship.
+ *
+ * Echoing the value is safe, unlike the parse error above: this variable is
+ * `NEXT_PUBLIC_`, so it already goes out to every visitor.
  */
 if (isProduction) {
   const site = env.NEXT_PUBLIC_SITE_URL;
   const { hostname } = new URL(site);
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
 
-  if (!site.startsWith('https://') || isLocal) {
+  if (!site.startsWith('https://') || isLoopback) {
     throw new Error(
-      `[env] NEXT_PUBLIC_SITE_URL must be the public https:// origin in production, got "${site}". ` +
-        'Canonical URLs, the sitemap, the manifest and robots.txt are all built from it, ' +
-        'so a wrong value silently keeps the site out of search.',
+      `[env] Could not determine the public site origin (resolved "${site}"). ` +
+        'Set NEXT_PUBLIC_SITE_URL to the https:// origin, e.g. https://onerlab.kz. ' +
+        'Canonical URLs, the sitemap, the manifest and robots.txt are built from it, ' +
+        'so a wrong value silently keeps the site out of search. ' +
+        'On Vercel this is filled in automatically from the project domain.',
     );
   }
 }
