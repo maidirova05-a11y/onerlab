@@ -6,7 +6,14 @@ import { adminEnabled, env, isProduction } from '@/lib/env';
 
 /**
  * =============================================================================
- * Edge middleware — per-request Content-Security-Policy with a fresh nonce.
+ * Proxy — per-request Content-Security-Policy with a fresh nonce.
+ * =============================================================================
+ * FILENAME: Next.js 16 renamed the `middleware` convention to `proxy`. The two
+ * differ in more than a name: `proxy` runs on the NODE runtime and that is not
+ * configurable, where `middleware` ran on the edge. Everything this file needs
+ * — `crypto.getRandomValues`, `btoa`, and `crypto.subtle` inside
+ * `admin-session.ts` — exists as a global in Node 20+, so the move costs
+ * nothing here.
  * =============================================================================
  * Why a nonce instead of a static CSP in `next.config.ts`?
  *
@@ -145,7 +152,7 @@ async function guardAdmin(request: NextRequest): Promise<NextResponse | null> {
   return NextResponse.redirect(loginUrl);
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const blocked = await guardAdmin(request);
   if (blocked) return blocked;
 
