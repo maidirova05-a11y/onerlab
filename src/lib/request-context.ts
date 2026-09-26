@@ -21,6 +21,15 @@ import { allowedOrigins, env, isProduction } from '@/lib/env';
 export function getClientIp(request: Request): string | null {
   const headers = request.headers;
 
+  // On Vercel only Vercel's own headers are trustworthy. There is no
+  // Cloudflare in front, so a client-sent `cf-connecting-ip` would reach us
+  // untouched — trusting it let anyone pick a fresh rate-limit bucket per
+  // request.
+  if (process.env.VERCEL) {
+    const vercel = headers.get('x-vercel-forwarded-for') ?? headers.get('x-real-ip');
+    return vercel ? (vercel.split(',')[0] ?? '').trim() || null : null;
+  }
+
   const trusted =
     headers.get('cf-connecting-ip') ?? // Cloudflare
     headers.get('x-real-ip') ?? // nginx
