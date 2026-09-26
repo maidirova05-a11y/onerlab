@@ -59,6 +59,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // Self-contained server bundle for the Docker image (see Dockerfile). Vercel
+  // builds leave NEXT_OUTPUT unset and are unaffected.
+  output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
+
   // Never advertise the framework version — free reconnaissance for an attacker.
   poweredByHeader: false,
 

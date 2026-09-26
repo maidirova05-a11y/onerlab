@@ -44,3 +44,7 @@ photos-in/
 # The template carries no secrets and documents required keys — keep it.
 # Must come AFTER the .env* catch-all above: last matching rule wins.
 !.env.example
+
+# Docker-версия и резервные копии (см. BACKUP.md)
+docker.env
+backups/
