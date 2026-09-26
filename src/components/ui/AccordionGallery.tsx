@@ -1,7 +1,7 @@
 'use client';
 
 import { gsap } from 'gsap';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import './AccordionGallery.css';
 
@@ -197,7 +197,11 @@ export function AccordionGallery({
    * inputs; the layout pass itself is driven by the effect below.
    */
   const applyLayoutRef = useRef(applyLayout);
-  applyLayoutRef.current = applyLayout;
+  // Refreshed after each commit, not during render (React may render and throw
+  // a render away); a layout effect still runs before every passive effect.
+  useLayoutEffect(() => {
+    applyLayoutRef.current = applyLayout;
+  });
 
   useEffect(() => {
     const el = rootRef.current;

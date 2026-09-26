@@ -66,3 +66,17 @@ model Lead {
   @@index([phone])
   @@map("leads")
 }
+
+/// One row per rate-limited request (login attempts, form posts).
+/// Kept in Postgres because serverless instances share no memory: an
+/// in-process counter reset on every cold start. `keyHash` is a salted
+/// SHA-256 of namespace + client IP, never the raw address. Rows older than a
+/// day are pruned by the limiter itself (src/lib/rate-limit.ts).
+model RateLimitHit {
+  id      BigInt   @id @default(autoincrement())
+  keyHash String   @map("key_hash")
+  hitAt   DateTime @default(now()) @map("hit_at") @db.Timestamptz(6)
+
+  @@index([keyHash, hitAt(sort: Desc)], map: "rate_limit_hits_key_idx")
+  @@map("rate_limit_hits")
+}

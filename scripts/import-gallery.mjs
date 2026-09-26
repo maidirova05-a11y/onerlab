@@ -31,9 +31,13 @@ import { spawnSync } from 'node:child_process';
 const IN_DIR = 'photos-in';
 const OUT_DIR = join('public', 'gallery');
 
-/** Portrait: the panels are tall and narrow until one is opened. */
-const TARGET_W = 900;
-const TARGET_H = 1200;
+/**
+ * Portrait: the panels are tall and narrow until one is opened. An opened
+ * panel is up to ~600 CSS px wide, i.e. ~1200 device pixels on a phone or
+ * Retina screen — at 900×1200 the photos were visibly soft there.
+ */
+const TARGET_W = 1200;
+const TARGET_H = 1600;
 
 if (!existsSync(IN_DIR)) {
   mkdirSync(IN_DIR, { recursive: true });
@@ -68,11 +72,20 @@ im = Image.open(src)
 im = ImageOps.exif_transpose(im)
 im = im.convert('RGB')
 
+# A source smaller than the target would only be blown up (blurry, no new
+# detail). Crop to the aspect at its own size instead, and say so.
+scale = min(im.width / W, im.height / H)
+if scale < 1:
+    W, H = int(W * scale), int(H * scale)
+    print(f'WARN {src}: only {im.width}x{im.height}, kept at {W}x{H} — send the original photo, not a messenger copy', file=sys.stderr)
+
 # Cover-crop to the target aspect, centred — same framing rule the CSS uses.
 im = ImageOps.fit(im, (W, H), Image.LANCZOS, centering=(0.5, 0.4))
 
 # save() without an exif= argument writes no metadata at all: no GPS, no device.
-im.save(dst, 'JPEG', quality=82, optimize=True, progressive=True)
+# q88 + 4:4:4 chroma: q82 with default 4:2:0 subsampling smeared fine brush
+# strokes and coloured edges, which is exactly what a painting gallery shows.
+im.save(dst, 'JPEG', quality=88, optimize=True, progressive=True, subsampling=0)
 print(os.path.getsize(dst))
 `;
 
@@ -97,6 +110,8 @@ files.forEach((file, i) => {
     console.error((result.stderr || '').trim().split('\n').slice(-3).join('\n'));
     return;
   }
+
+  if (result.stderr && result.stderr.includes('WARN')) console.warn(`  ${result.stderr.trim()}`);
 
   const inSize = statSync(inPath).size;
   const outSize = Number((result.stdout || '0').trim());

@@ -1,7 +1,7 @@
 'use client';
 
 import { Color, Polyline, Renderer, Transform, Vec3 } from 'ogl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import './Ribbons.css';
 
@@ -141,15 +141,19 @@ export function Ribbons({
     rainbowLightness,
     backgroundColor,
   });
-  propsRef.current = {
-    colors,
-    rainbow,
-    hueSpeed,
-    hueSpread,
-    rainbowSaturation,
-    rainbowLightness,
-    backgroundColor,
-  };
+  // Refreshed after each commit rather than during render; a layout effect
+  // runs before the passive effect below that starts the render loop.
+  useLayoutEffect(() => {
+    propsRef.current = {
+      colors,
+      rainbow,
+      hueSpeed,
+      hueSpread,
+      rainbowSaturation,
+      rainbowLightness,
+      backgroundColor,
+    };
+  });
 
   // Serialised so array props compare by value, not by identity.
   const colorsKey = colors.join(',');
