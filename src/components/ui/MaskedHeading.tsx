@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 
 import './MaskedHeading.css';
 
@@ -106,7 +106,9 @@ export function MaskedHeading({
   // Read through a ref so the animation loop never has to be torn down and
   // rebuilt when a purely visual prop changes.
   const settingsRef = useRef({ fillScale, parallax, drift, brightness, saturation, grayscale, textScale, minFontSize, maxFontSize });
-  settingsRef.current = { fillScale, parallax, drift, brightness, saturation, grayscale, textScale, minFontSize, maxFontSize };
+  useLayoutEffect(() => {
+    settingsRef.current = { fillScale, parallax, drift, brightness, saturation, grayscale, textScale, minFontSize, maxFontSize };
+  });
 
   /** Positions and filters the media. Called every frame. */
   const place = useCallback(() => {
