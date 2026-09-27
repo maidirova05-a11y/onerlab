@@ -129,8 +129,9 @@ function HeroArtwork() {
           </svg>
         </div>
 
-        {/* Frame footer, like a gallery label */}
-        <div className="mt-3 flex items-center justify-between px-1">
+        {/* Frame footer, like a gallery label. Right-aligned so the floating
+            price chip, which overlaps the bottom-left corner, never covers it. */}
+        <div className="mt-3 flex items-center justify-end gap-3 px-1">
           <span className="text-xs font-bold uppercase tracking-[0.14em] text-ink-faint">
             OnerLab · Астана
           </span>

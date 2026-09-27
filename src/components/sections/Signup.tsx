@@ -38,7 +38,7 @@ export function Signup() {
 
                 <h2 className="mt-4 text-3xl font-extrabold leading-[1.15] text-ink sm:text-4xl">
                   Запишите ребенка на пробный урок за{' '}
-                  <span className="brush-underline">5000 ₸</span>
+                  <span className="brush-underline whitespace-nowrap">5 000 ₸</span>
                 </h2>
               </Reveal>
 
