@@ -44,6 +44,9 @@ export function Intro() {
             data-intro-backdrop
             className="h-full w-full object-cover"
             src={intro.videoSrc}
+            // Same frame as the letters' poster, so a phone that is still
+            // buffering (or refuses autoplay) shows the studio, not a grey box.
+            poster={intro.logoStillSrc}
             autoPlay
             muted
             loop
@@ -76,11 +79,13 @@ export function Intro() {
               label={intro.brand}
               mediaType={useVideo ? 'video' : 'image'}
               src={useVideo ? intro.videoSrc : intro.fallbackSrc}
-              // A frame from the same footage, used below `lg` where a second
-              // decoder is too costly — it matches the backdrop instead of
-              // clashing with it.
+              // A frame from the same footage: the poster while the video
+              // loads, and the fill if it cannot play (Data Saver, errors).
+              // Phones get the live video too — a frozen frame inside the
+              // letters over a moving backdrop read as a video that never
+              // loaded. Both elements share one URL, so the file is fetched
+              // once and served to the second from cache.
               fallbackSrc={intro.logoStillSrc}
-              videoMinWidth={1024}
               syncWith="[data-intro-backdrop]"
               brightness={1.35}
               saturation={1.25}

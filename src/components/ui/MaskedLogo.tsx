@@ -94,13 +94,41 @@ export function MaskedLogo({
   }, [duration, src]);
 
   useEffect(() => {
-    if (videoMinWidth === 0) return;
+    // Data Saver on: skip the second stream and keep the still.
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const saveData = connection?.saveData === true;
     const wide = window.matchMedia(`(min-width: ${videoMinWidth}px)`);
-    const sync = () => setCanAffordVideo(wide.matches);
+    const sync = () => setCanAffordVideo(wide.matches && !saveData);
     sync();
     wide.addEventListener('change', sync);
     return () => wide.removeEventListener('change', sync);
   }, [videoMinWidth]);
+
+  // iOS Safari only autoplays a video it can see is muted, and React never
+  // writes `muted` into the server HTML (it is set as a property after
+  // hydration). So the SSR'd backdrop could sit on its first frame on an
+  // iPhone. Re-assert muted and start both copies explicitly; a rejected
+  // play() (Low Power Mode) just leaves the poster frame, which matches.
+  useEffect(() => {
+    const videos = [
+      videoRef.current,
+      syncWith ? document.querySelector<HTMLVideoElement>(syncWith) : null,
+    ].filter((v): v is HTMLVideoElement => v !== null);
+    for (const video of videos) {
+      video.muted = true;
+      video.playsInline = true;
+      if (video.paused) void video.play().catch(() => {});
+    }
+
+    // React's onError misses a failure that happened before hydration, so
+    // check the element directly and listen for later ones.
+    const mine = videoRef.current;
+    if (!mine) return;
+    const fail = () => setCanAffordVideo(false);
+    if (mine.error) queueMicrotask(fail);
+    mine.addEventListener('error', fail);
+    return () => mine.removeEventListener('error', fail);
+  }, [syncWith, canAffordVideo]);
 
   // Keep this copy locked to the backdrop's playhead.
   useEffect(() => {
@@ -159,7 +187,9 @@ export function MaskedLogo({
               ref={videoRef}
               className="masked-logo__source"
               src={src}
-                autoPlay
+              poster={fallbackSrc}
+              preload="auto"
+              autoPlay
               muted
               loop
               playsInline
