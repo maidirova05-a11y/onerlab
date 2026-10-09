@@ -34,13 +34,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#FAC90A',
     categories: ['education', 'kids'],
     icons: [
-      /*
-       * Sizes are the files' REAL intrinsic dimensions, measured, not rounded
-       * to the usual 192/512. A manifest that claims a size the bitmap does not
-       * have makes Chrome discard the icon and fall back to a screenshot of the
-       * page. 484px still clears the >=192px bar installability requires.
-       */
-      { src: '/logo.png', sizes: '484x484', type: 'image/png', purpose: 'any' },
+      // Square "ö" mark on the brand yellow; sizes are the files' real ones.
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
       { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
     ],
   };
