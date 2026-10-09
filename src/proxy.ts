@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin-session';
 import { CAPTCHA_SCRIPT_ORIGINS } from '@/lib/captcha';
 import { adminEnabled, env, isProduction } from '@/lib/env';
+import { YANDEX_METRIKA_ORIGIN, YANDEX_METRIKA_ORIGINS } from '@/lib/yandex-metrika';
 
 /**
  * =============================================================================
@@ -69,7 +70,8 @@ function buildCsp(nonce: string): string {
     // smaller concession than 'unsafe-inline' on script-src would be.
     'style-src': ["'self'", "'unsafe-inline'"],
 
-    'img-src': ["'self'", 'data:', 'blob:'],
+    // Yandex.Metrika's no-JS / fallback pixel.
+    'img-src': ["'self'", 'data:', 'blob:', ...YANDEX_METRIKA_ORIGINS],
 
     // The hero footage. Without this, video would fall through to `default-src`
     // — which happens to allow 'self' today, but silently breaks the moment
@@ -82,11 +84,13 @@ function buildCsp(nonce: string): string {
     'connect-src': [
       "'self'",
       ...captchaOrigins,
+      ...YANDEX_METRIKA_ORIGINS, // Metrika hits and Webvisor
       ...(isProduction ? [] : ['ws:', 'wss:']), // dev HMR socket
     ],
 
     // The CAPTCHA widget renders inside an iframe.
-    'frame-src': ["'self'", ...captchaOrigins],
+    // Metrika (Webvisor) uses a blob:/mc.yandex.ru iframe.
+    'frame-src': ["'self'", ...captchaOrigins, 'blob:', YANDEX_METRIKA_ORIGIN],
 
     // Clickjacking defence — the modern replacement for X-Frame-Options.
     'frame-ancestors': ["'none'"],

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Manrope } from 'next/font/google';
 
+import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { BrushLayer } from '@/components/ui/BrushLayer';
 import { PaintField } from '@/components/ui/PaintField';
@@ -91,8 +92,16 @@ export const metadata: Metadata = {
     description: meta.description,
     images: ['/og-image.jpg'],
   },
+  /*
+   * The "ö" mark on the brand yellow, not the full wordmark: at 16px "öner lab"
+   * was an unreadable grey smudge. /favicon.ico is also what Yandex and older
+   * browsers fetch without reading these tags.
+   */
   icons: {
-    icon: [{ url: '/logo.png', type: 'image/png' }],
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
   robots: {
@@ -180,6 +189,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /privacy, a page that shows none of them.
         */}
         <JsonLd data={siteGraph()} />
+
+        {/* Skips /admin itself — see the component. */}
+        <YandexMetrika />
       </body>
     </html>
   );
