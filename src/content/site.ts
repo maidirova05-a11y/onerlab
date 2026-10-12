@@ -318,6 +318,7 @@ export const footer = {
   navLabel: 'Разделы',
   legalLabel: 'Документы',
   privacyLabel: 'Политика конфиденциальности',
+  ofertaLabel: 'Публичная оферта',
   rightsReserved: 'Все права защищены.',
   writeUs: 'Написать в WhatsApp',
 } as const;

@@ -29,5 +29,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       images: [`${base}/og-image.jpg`, ...gallery.items.map((item) => `${base}${item.image}`)],
     },
     { url: `${base}/privacy`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/oferta`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
   ];
 }

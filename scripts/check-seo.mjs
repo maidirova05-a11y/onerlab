@@ -29,6 +29,7 @@ const START_HINT = 'npm run build && npm start';
 const PAGES = [
   ['/',        { indexable: true, lang: 'ru' }],
   ['/privacy', { indexable: true, lang: 'ru' }],
+  ['/oferta',  { indexable: true, lang: 'ru' }],
 ];
 /* ─────────────────────────────────────────────────────────────────────────
  * Общая часть проверки. Ниже, под ── НАСТРОЙКИ ──, лежит всё, что отличает

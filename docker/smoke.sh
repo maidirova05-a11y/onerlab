@@ -39,6 +39,7 @@ echo "onerlab: $BASE"
 [ "$(docker compose ps -a migrate --format '{{.ExitCode}}')" = 0 ] && ok "миграции применены" || bad "миграции не прошли"
 expect 200 /
 expect 200 /privacy
+expect 200 /oferta
 expect 200 /sitemap.xml
 expect 200 /robots.txt
 grep -q "<link rel=\"canonical\" href=\"$SITE\"" <<<"$(curl -s "$BASE/")" && ok "canonical = $SITE" || bad "canonical не $SITE"
