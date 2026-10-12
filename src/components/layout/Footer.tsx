@@ -112,6 +112,14 @@ export function Footer() {
                     {footer.privacyLabel}
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/oferta"
+                    className="inline-flex min-h-10 items-center text-white/80 transition-colors hover:text-brand"
+                  >
+                    {footer.ofertaLabel}
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

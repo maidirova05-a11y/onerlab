@@ -252,23 +252,26 @@ export function homeGraph(): Json {
 export function privacyGraph({
   title,
   description,
+  path = '/privacy',
 }: {
   title: string;
   description: string;
+  /** The legal page this graph describes — /privacy or /oferta. */
+  path?: string;
 }): Json {
   return {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'WebPage',
-        '@id': `${siteUrl}/privacy#webpage`,
-        url: `${siteUrl}/privacy`,
+        '@id': `${siteUrl}${path}#webpage`,
+        url: `${siteUrl}${path}`,
         name: title,
         description,
         inLanguage: 'ru-RU',
         isPartOf: { '@id': ID.website },
         about: { '@id': ID.organization },
-        breadcrumb: { '@id': `${siteUrl}/privacy#breadcrumb` },
+        breadcrumb: { '@id': `${siteUrl}${path}#breadcrumb` },
       },
       {
         /*
@@ -276,10 +279,10 @@ export function privacyGraph({
          * word — Google compares the two and ignores markup that disagrees.
          */
         '@type': 'BreadcrumbList',
-        '@id': `${siteUrl}/privacy#breadcrumb`,
+        '@id': `${siteUrl}${path}#breadcrumb`,
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Главная', item: siteUrl },
-          { '@type': 'ListItem', position: 2, name: title, item: `${siteUrl}/privacy` },
+          { '@type': 'ListItem', position: 2, name: title, item: `${siteUrl}${path}` },
         ],
       },
     ],
