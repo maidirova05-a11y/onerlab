@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Manrope } from 'next/font/google';
 
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { BrushLayer } from '@/components/ui/BrushLayer';
 import { PaintField } from '@/components/ui/PaintField';
@@ -190,8 +191,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         */}
         <JsonLd data={siteGraph()} />
 
-        {/* Skips /admin itself — see the component. */}
+        {/* Both skip /admin itself — see the components. */}
         <YandexMetrika />
+        <GoogleAnalytics />
       </body>
     </html>
   );
