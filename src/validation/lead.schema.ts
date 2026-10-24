@@ -36,6 +36,78 @@ const SCHOOL_PATTERN = /^(?=.*[\p{L}\p{N}])[\p{L}\p{N}\s'’«»"№.,()\/-]+$/u
 /** Names, plus digits for the age, plus a few separators. */
 const NAME_AGE_PATTERN = /^[\p{L}\p{N}][\p{L}\p{N}\s'’,.()-]*$/u;
 
+/* -------------------------------------------------------------------------- */
+/* Marketing attribution                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Characters a UTM value may keep: letters, digits, and the separators ad
+ * platforms actually emit (`_`, `-`, `.`, `+`, `|`, `/`, `:`, `%`, `{}` for an
+ * unresolved template like `{campaignid}`). Everything else — angle brackets,
+ * quotes, backticks, semicolons — is DROPPED rather than failing validation.
+ *
+ * That asymmetry with the fields above is deliberate. A parent's name is
+ * something they typed and can fix; a UTM tag was pasted by whoever set up the
+ * ad, and rejecting the LEAD because the ad link is malformed would cost the
+ * studio the customer to protect a statistic. So attribution is sanitised to
+ * the same allow-list shape, hard-capped to the column width, and never the
+ * reason a submission fails.
+ */
+const UTM_DISALLOWED = /[^\p{L}\p{N}\s_.+|/:%{}()-]/gu;
+
+/** Trimmed, control-free, allow-listed, capped; empty becomes `undefined`. */
+const utmValue = z
+  .unknown()
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined;
+    const cleaned = sanitizeText(value, 120).replace(UTM_DISALLOWED, '').trim().slice(0, 120);
+    return cleaned.length > 0 ? cleaned : undefined;
+  })
+  .optional();
+
+/**
+ * `document.referrer` — kept only when it parses as an http(s) URL. The
+ * fragment is dropped (it is never sent by browsers anyway, and a hand-crafted
+ * one is the obvious place to smuggle text), and the result is capped to the
+ * column width.
+ */
+const referrerValue = z
+  .unknown()
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined;
+    const cleaned = sanitizeText(value, 500);
+    if (!cleaned) return undefined;
+    try {
+      const url = new URL(cleaned);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+      url.hash = '';
+      // Credentials in a referrer are nonsense at best and a secret at worst.
+      url.username = '';
+      url.password = '';
+      return url.href.slice(0, 500);
+    } catch {
+      return undefined;
+    }
+  })
+  .optional();
+
+/**
+ * The first path the visitor opened, with its query string — a single-origin
+ * path only: it must start with exactly one `/`, carry no backslash (browsers
+ * read `/\x` as `//x`), and use only URL-safe characters. Anything else is
+ * dropped, not rejected, for the same reason as the UTM values.
+ */
+const LANDING_PATH_PATTERN = /^\/(?![/\\])[\p{L}\p{N}\-._~!$&'()*+,;=:@/?%#]*$/u;
+
+const landingPathValue = z
+  .unknown()
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined;
+    const cleaned = sanitizeText(value, 255);
+    return LANDING_PATH_PATTERN.test(cleaned) ? cleaned : undefined;
+  })
+  .optional();
+
 export const leadFormSchema = z.object({
   /** "Имя родителя" */
   parentName: z
@@ -105,6 +177,18 @@ export const leadFormSchema = z.object({
 
   /** Token produced by the Turnstile / reCAPTCHA widget. Verified server-side. */
   captchaToken: z.string().max(4096).optional(),
+
+  /**
+   * MARKETING ATTRIBUTION — filled in by the form from the URL the visitor
+   * arrived on, never typed by the parent. See `lib/attribution.ts`.
+   */
+  utmSource: utmValue,
+  utmMedium: utmValue,
+  utmCampaign: utmValue,
+  utmContent: utmValue,
+  utmTerm: utmValue,
+  referrer: referrerValue,
+  landingPath: landingPathValue,
 });
 
 /** Shape the form component works with (pre-transform). */
@@ -116,6 +200,13 @@ export interface LeadFormInput {
   consent: boolean;
   website?: string;
   captchaToken?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+  referrer?: string;
+  landingPath?: string;
 }
 
 /** Shape the server persists (post-transform, normalised). */

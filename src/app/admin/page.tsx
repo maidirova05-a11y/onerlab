@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { LogoutButton } from '@/components/admin/LogoutButton';
 import { StatusSelect } from '@/components/admin/StatusSelect';
+import { leadSource } from '@/components/admin/source';
 import { LEAD_STATUSES, STATUS_ORDER, type LeadStatusValue } from '@/components/admin/status';
 import { Logo } from '@/components/layout/Logo';
 import { leadService } from '@/server/services/lead.service';
@@ -120,7 +121,7 @@ export default async function AdminPage({
 
       {/* --- Table --- */}
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-canvas">
-        <table className="w-full min-w-[980px] border-collapse text-left">
+        <table className="w-full min-w-[1120px] border-collapse text-left">
           <thead>
             <tr className="border-b border-line bg-canvas-alt text-xs uppercase tracking-wide text-ink-muted">
               <th scope="col" className="px-4 py-3 font-bold">Дата</th>
@@ -128,49 +129,70 @@ export default async function AdminPage({
               <th scope="col" className="px-4 py-3 font-bold">Ребёнок и возраст</th>
               <th scope="col" className="px-4 py-3 font-bold">Школа</th>
               <th scope="col" className="px-4 py-3 font-bold">Телефон</th>
+              <th scope="col" className="px-4 py-3 font-bold">Источник</th>
               <th scope="col" className="px-4 py-3 font-bold">Статус</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-16 text-center text-sm text-ink-muted">
+                <td colSpan={7} className="px-4 py-16 text-center text-sm text-ink-muted">
                   {search || status
                     ? 'По этому фильтру заявок нет.'
                     : 'Заявок пока нет. Они появятся здесь сразу после отправки формы на сайте.'}
                 </td>
               </tr>
             ) : (
-              items.map((lead) => (
-                <tr key={lead.id} className="border-b border-line last:border-0 hover:bg-canvas-alt/60">
-                  <td className="px-4 py-3.5 text-sm whitespace-nowrap text-ink-muted">
-                    {dateFormatter.format(lead.createdAt)}
-                  </td>
-                  <td className="px-4 py-3.5 text-sm font-semibold text-ink">{lead.parentName}</td>
-                  <td className="px-4 py-3.5 text-sm text-ink-soft">{lead.childNameAge}</td>
-                  <td className="px-4 py-3.5 text-sm text-ink-soft">
-                    {lead.school ?? <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-4 py-3.5 text-sm whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <a href={`tel:${lead.phone}`} className="font-semibold text-ink hover:underline">
-                        {lead.phone}
-                      </a>
-                      <a
-                        href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-bold text-green-700 hover:underline"
+              items.map((lead) => {
+                const source = leadSource(lead);
+                return (
+                  <tr key={lead.id} className="border-b border-line last:border-0 hover:bg-canvas-alt/60">
+                    <td className="px-4 py-3.5 text-sm whitespace-nowrap text-ink-muted">
+                      {dateFormatter.format(lead.createdAt)}
+                    </td>
+                    <td className="px-4 py-3.5 text-sm font-semibold text-ink">{lead.parentName}</td>
+                    <td className="px-4 py-3.5 text-sm text-ink-soft">{lead.childNameAge}</td>
+                    <td className="px-4 py-3.5 text-sm text-ink-soft">
+                      {lead.school ?? <span className="text-ink-faint">—</span>}
+                    </td>
+                    <td className="px-4 py-3.5 text-sm whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <a href={`tel:${lead.phone}`} className="font-semibold text-ink hover:underline">
+                          {lead.phone}
+                        </a>
+                        <a
+                          href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-green-700 hover:underline"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
+                    </td>
+                    {/*
+                      Where the lead came from. utm_source / utm_medium when the
+                      ad was tagged, else the referrer host, else "прямой заход".
+                      The full UTM set, referrer and landing path sit in the
+                      tooltip — the manager needs the channel at a glance, the
+                      marketer needs the rest occasionally.
+                    */}
+                    <td className="px-4 py-3.5 text-sm">
+                      <span
+                        title={source.details.length ? source.details.join('\n') : undefined}
+                        className={`inline-block max-w-[180px] truncate align-middle ${
+                          source.details.length ? 'text-ink-soft' : 'text-ink-faint'
+                        }`}
                       >
-                        WhatsApp
-                      </a>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <StatusSelect leadId={lead.id} initialStatus={lead.status} />
-                  </td>
-                </tr>
-              ))
+                        {source.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <StatusSelect leadId={lead.id} initialStatus={lead.status} />
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

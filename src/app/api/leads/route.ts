@@ -45,8 +45,16 @@ export const runtime = 'nodejs';
 // Never prerender or cache a mutation endpoint.
 export const dynamic = 'force-dynamic';
 
-/** Reject anything larger than this before parsing. ~4 KB is generous for 3 fields. */
-const MAX_BODY_BYTES = 4096;
+/**
+ * Reject anything larger than this before parsing.
+ *
+ * Budget: four form fields (~350 bytes), a CAPTCHA token (Turnstile issues up
+ * to 2 KB), and the attribution block — five UTM values at 120 characters, a
+ * 500-character referrer and a 255-character landing path, which as Cyrillic
+ * JSON-escaped text can approach 2 KB. 8 KB leaves headroom for all of that
+ * together while still refusing anything that looks like a payload.
+ */
+const MAX_BODY_BYTES = 8192;
 
 const leadRateLimiter = createRateLimiter('leads');
 
