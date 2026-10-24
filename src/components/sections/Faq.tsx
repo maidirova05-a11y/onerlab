@@ -18,9 +18,9 @@ import { faq } from '@/content/site';
  *      show them as rich results. A JS accordion that mounts answers on click
  *      would ship an empty section to the bot.
  *
- * The matching FAQPage structured data lives in `app/layout.tsx` and is
- * generated from this same `faq.items`, so the two can never drift apart —
- * which is exactly the mismatch Google penalises.
+ * The matching FAQPage structured data is emitted by `app/page.tsx` via
+ * `lib/seo/structured-data.ts`, generated from this same `faq.items`, so the
+ * two can never drift apart — which is exactly the mismatch Google penalises.
  */
 export function Faq() {
   return (
