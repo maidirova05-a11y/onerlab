@@ -25,9 +25,11 @@ function hostOf(url: string): string | null {
 }
 
 export function leadSource(
-  lead: Pick<
-    Lead,
-    'utmSource' | 'utmMedium' | 'utmCampaign' | 'utmContent' | 'utmTerm' | 'referrer' | 'landingPath'
+  lead: Partial<
+    Pick<
+      Lead,
+      'utmSource' | 'utmMedium' | 'utmCampaign' | 'utmContent' | 'utmTerm' | 'referrer' | 'landingPath'
+    >
   >,
 ): LeadSource {
   const details: string[] = [];

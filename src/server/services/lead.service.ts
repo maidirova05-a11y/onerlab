@@ -3,6 +3,7 @@ import { Prisma, type Lead, type LeadStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { AppError, ErrorCode } from '@/lib/http';
 import { logger } from '@/lib/logger';
+import { ensureLeadAttributionColumns } from '@/server/db/ensure-schema';
 import type { LeadFormData } from '@/validation/lead.schema';
 
 /**
@@ -19,6 +20,36 @@ import type { LeadFormData } from '@/validation/lead.schema';
 
 /** A repeat submission from the same number inside this window is a duplicate. */
 const DUPLICATE_WINDOW_MS = 10 * 60 * 1000;
+
+/** Columns that predate the attribution migration — always safe to select. */
+const BASE_LEAD_SELECT = {
+  id: true,
+  parentName: true,
+  childNameAge: true,
+  school: true,
+  phone: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  ipHash: true,
+  userAgent: true,
+  source: true,
+} satisfies Prisma.LeadSelect;
+
+const ATTRIBUTION_SELECT = {
+  utmSource: true,
+  utmMedium: true,
+  utmCampaign: true,
+  utmContent: true,
+  utmTerm: true,
+  referrer: true,
+  landingPath: true,
+} satisfies Prisma.LeadSelect;
+
+type AttributionField = keyof typeof ATTRIBUTION_SELECT;
+
+/** A lead row for the admin list; attribution is absent if its columns are. */
+export type LeadListItem = Omit<Lead, AttributionField> & Partial<Pick<Lead, AttributionField>>;
 
 export interface CreateLeadInput {
   data: LeadFormData;
@@ -46,6 +77,11 @@ export class LeadService {
     const { data, ipHash, userAgent, source } = input;
 
     try {
+      // Never throws. If the attribution columns could not be ensured (e.g. the
+      // role lacks ALTER), the lead is saved without them: attribution is worth
+      // less than the lead.
+      const withAttribution = await ensureLeadAttributionColumns();
+
       /*
        * Duplicate check and insert in ONE transaction, serialised per phone.
        *
@@ -92,14 +128,20 @@ export class LeadService {
             source,
             // Marketing attribution — already sanitised by the schema; `undefined`
             // leaves the column NULL.
-            utmSource: data.utmSource,
-            utmMedium: data.utmMedium,
-            utmCampaign: data.utmCampaign,
-            utmContent: data.utmContent,
-            utmTerm: data.utmTerm,
-            referrer: data.referrer,
-            landingPath: data.landingPath,
+            ...(withAttribution
+              ? {
+                  utmSource: data.utmSource,
+                  utmMedium: data.utmMedium,
+                  utmCampaign: data.utmCampaign,
+                  utmContent: data.utmContent,
+                  utmTerm: data.utmTerm,
+                  referrer: data.referrer,
+                  landingPath: data.landingPath,
+                }
+              : {}),
           },
+          // Keeps RETURNING to pre-attribution columns, so the insert works
+          // whether or not the attribution migration has been applied.
           select: { id: true, createdAt: true },
         });
       });
@@ -176,9 +218,12 @@ export class LeadService {
         : {}),
     };
 
+    const withAttribution = await ensureLeadAttributionColumns();
+
     const [items, total] = await Promise.all([
       prisma.lead.findMany({
         where,
+        select: withAttribution ? { ...BASE_LEAD_SELECT, ...ATTRIBUTION_SELECT } : BASE_LEAD_SELECT,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -209,9 +254,14 @@ export class LeadService {
    * anyway, but failing at the edge gives the manager a usable error instead of
    * a 500.
    */
-  async updateStatus(id: string, status: LeadStatus): Promise<Lead | null> {
+  async updateStatus(id: string, status: LeadStatus): Promise<Pick<Lead, 'id' | 'status'> | null> {
     try {
-      const lead = await prisma.lead.update({ where: { id }, data: { status } });
+      // Narrow RETURNING: independent of whether the attribution migration ran.
+      const lead = await prisma.lead.update({
+        where: { id },
+        data: { status },
+        select: { id: true, status: true },
+      });
       logger.info({ leadId: id, status }, 'lead status updated');
       return lead;
     } catch (error) {
@@ -232,7 +282,7 @@ export interface ListLeadsOptions {
 }
 
 export interface ListLeadsResult {
-  items: Lead[];
+  items: LeadListItem[];
   total: number;
   page: number;
   pageSize: number;

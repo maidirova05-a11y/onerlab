@@ -11,8 +11,9 @@ import { env, isProduction } from '@/lib/env';
  * after a few dozen edits.
  *
  * Security note: Prisma is the *only* thing in this codebase that talks to the
- * database, and it exclusively emits parameterised queries. There is no raw
- * `$queryRawUnsafe` anywhere — that is what makes SQL injection structurally
+ * database, and it exclusively emits parameterised queries. The only
+ * `*RawUnsafe` calls (src/server/db/ensure-schema.ts) run constant DDL with no
+ * interpolated input — that is what makes SQL injection structurally
  * impossible rather than merely "handled".
  * =============================================================================
  */
