@@ -283,6 +283,18 @@ compute после простоя, и `prisma migrate deploy` падал с `P10
 npm run db:deploy
 ```
 
+`prisma migrate deploy` ходит в базу через `DIRECT_URL` (прямой, не pooled
+эндпоинт Neon) — без этой переменной в окружении команда не запустится.
+
+Колонки атрибуции заявок (`utm*`, `referrer`, `landingPath`, миграция
+`20261024000000_add_lead_attribution`) приложение добавляет само при первом
+обращении к заявкам — `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, тот же SQL,
+что в миграции (`src/server/db/ensure-schema.ts`), так что порядок «деплой →
+миграция» ничего не ломает. Если у роли базы нет права на `ALTER`, заявки
+сохраняются без атрибуции, а в логе будет ошибка `could not ensure lead
+attribution columns`. Миграцию всё равно накатите (`npm run db:deploy`), чтобы
+история `_prisma_migrations` совпадала со схемой.
+
 Секреты живут только в переменных окружения проекта Vercel — в репозитории
 их нет. Список требуемых ключей: `.env.example`.
 

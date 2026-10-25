@@ -211,8 +211,8 @@ export function MaskedLogo({
       </div>
 
       {badgeSrc && (
-        // eslint-disable-next-line @next/next/no-img-element -- fixed-position
-        // overlay sized in percentages; the optimiser cannot help here.
+        // Fixed-position overlay sized in percentages; the optimiser cannot help here.
+        // eslint-disable-next-line @next/next/no-img-element
         <img ref={badgeRef} src={badgeSrc} alt="" aria-hidden className="masked-logo__badge" />
       )}
     </div>

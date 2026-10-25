@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { program } from '@/content/site';
+import { pricing, program } from '@/content/site';
 
 /**
  * «Программа и стоимость».
@@ -90,7 +90,7 @@ export function Program() {
                 </Button>
 
                 <p className="mt-4 text-center text-xs leading-relaxed text-ink-muted">
-                  Начните с пробного урока за 5 000 ₸ — без обязательств
+                  Начните с пробного урока за {pricing.trialLabel} — без обязательств
                 </p>
               </div>
             </div>
