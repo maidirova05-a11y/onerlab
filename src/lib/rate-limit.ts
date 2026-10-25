@@ -151,12 +151,35 @@ class PostgresRateLimitStore implements RateLimitStore {
     try {
       await this.ensureTable();
       const where = { keyHash, hitAt: { gt: since } };
-      const [count, first] = await Promise.all([
-        prisma.rateLimitHit.count({ where }),
-        prisma.rateLimitHit.findFirst({ where, orderBy: { hitAt: 'asc' }, select: { hitAt: true } }),
-      ]);
+
+      /*
+       * Count and insert in ONE transaction, serialised per key.
+       *
+       * As separate statements the limiter had a race: requests from one IP
+       * arriving together all counted the window before any of them had
+       * inserted, so all of them passed (measured: 6 of 20 concurrent requests
+       * got through a limit of 5). `pg_advisory_xact_lock` on a hash of the key
+       * makes the second request wait until the first has committed — the same
+       * device `lead.service.ts` uses for the duplicate guard. Transaction-
+       * scoped, so the lock is released at COMMIT/ROLLBACK and works through
+       * PgBouncer in transaction mode. The limiter holds exactly one lock and
+       * requests no other, so it cannot deadlock with the lead transaction, and
+       * a `hashtext` collision only means two unrelated keys briefly queue.
+       *
+       * Tagged `$executeRaw`, so the key travels as a bound parameter.
+       */
+      const { count, first } = await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${keyHash}))`;
+        const count = await tx.rateLimitHit.count({ where });
+        const first = await tx.rateLimitHit.findFirst({
+          where,
+          orderBy: { hitAt: 'asc' },
+          select: { hitAt: true },
+        });
+        if (count < limit) await tx.rateLimitHit.create({ data: { keyHash } });
+        return { count, first };
+      });
       const allowed = count < limit;
-      if (allowed) await prisma.rateLimitHit.create({ data: { keyHash } });
       // Occasional cleanup keeps the table to roughly a day of rows.
       if (Math.random() < 0.02) {
         await prisma.rateLimitHit.deleteMany({ where: { hitAt: { lt: new Date(now - 86_400_000) } } });

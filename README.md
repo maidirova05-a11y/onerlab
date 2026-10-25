@@ -146,7 +146,7 @@ database round-trip or an outbound CAPTCHA call.
 | 1 | Origin allow-list | cross-site abuse / CSRF | `403` |
 | 2 | `Content-Type: application/json` required | simple-request CSRF | `415` |
 | 3 | Body size cap (8 KB, header **and** actual bytes) | memory exhaustion | `413` |
-| 4 | Sliding-window rate limit per IP | spam, app-layer DoS | `429` |
+| 4 | Sliding-window rate limit per IP (count + record serialised per IP with a transaction-scoped advisory lock) | spam, app-layer DoS | `429` |
 | 5 | Honeypot field | naive bots | `201` decoy |
 | 6 | Zod validation + sanitisation | malformed / hostile input | `400` |
 | 7 | CAPTCHA verification | scripted bots | `403` |

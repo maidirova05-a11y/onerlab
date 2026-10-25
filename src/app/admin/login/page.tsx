@@ -20,8 +20,17 @@ export const dynamic = 'force-dynamic';
  */
 const SAFE_NEXT_PATTERN = /^\/admin(?:[/?#][\w\-.~!$&'()*+,;=:@/?%#]*)?$/;
 
+/**
+ * A `.` or `..` path segment — plain or percent-encoded, which the URL parser
+ * resolves the same way — would walk the redirect back out of the panel:
+ * `/admin/../x` lands on `/x`. Same origin, so not an open redirect, but not
+ * "inside the panel" either. Checked on the path only; the query may say `..`.
+ */
+const DOT_SEGMENT = /(?:^|\/)(?:\.|%2e){1,2}(?=[/?#]|$)/i;
+
 function safeNext(value: string | undefined): string {
   if (!value || value.includes('\\') || !SAFE_NEXT_PATTERN.test(value)) return '/admin';
+  if (DOT_SEGMENT.test(value.split(/[?#]/, 1)[0] ?? '')) return '/admin';
   return value;
 }
 
