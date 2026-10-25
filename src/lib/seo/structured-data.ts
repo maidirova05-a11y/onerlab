@@ -1,4 +1,4 @@
-import { contacts, faq, gallery, meta } from '@/content/site';
+import { contacts, faq, gallery, meta, pricing, program } from '@/content/site';
 import { env } from '@/lib/env';
 
 /**
@@ -45,6 +45,27 @@ export const ID = {
 const OG_IMAGE_ALT = 'OnerLab — школа живописи для детей в Астане';
 
 /**
+ * What the studio teaches, as schema.org `knowsAbout`.
+ *
+ * Restricted to what the programme section actually lists — painting,
+ * composition, the three media, and the genres the curriculum names. No oil,
+ * no sketching, no drawing-for-exams: competitors rank for those, we do not
+ * teach them, and `knowsAbout` is a claim about the page, not a wish list.
+ */
+const KNOWS_ABOUT = [
+  'Живопись',
+  'Композиция',
+  'Акварель',
+  'Гуашь',
+  'Акриловая живопись',
+  'Основы цвета',
+  'Свет, тень и объем',
+  'Натюрморт',
+  'Пейзаж',
+  'Сюжетная композиция',
+] as const;
+
+/**
  * The studio.
  *
  * Two types on purpose. EducationalOrganization describes what the studio IS;
@@ -69,8 +90,9 @@ function organization(): Json {
     // The wide card, not the square logo — Google prefers >=1200px wide images
     // and will not use a small square for a rich result.
     image: { '@id': ID.primaryImage },
-    priceRange: '5000–21000 ₸',
+    priceRange: `${pricing.trialKzt}–${pricing.monthlyKzt} ₸`,
     currenciesAccepted: 'KZT',
+    knowsAbout: [...KNOWS_ABOUT],
     /* Who the classes are for. Feeds "для детей"/age-qualified queries. */
     audience: {
       '@type': 'EducationalAudience',
@@ -93,11 +115,18 @@ function organization(): Json {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Course',
-            name: 'Живопись и композиция',
+            name: program.courseName,
             description:
               'Офлайн-курс живописи для детей 1–8 классов: 1,5 часа, 2 раза в неделю, все материалы включены.',
             provider: { '@id': ID.organization },
             inLanguage: 'ru-RU',
+            // The curriculum bullets the page shows, verbatim.
+            teaches: [...program.curriculum],
+            audience: {
+              '@type': 'EducationalAudience',
+              educationalRole: 'student',
+              audienceType: 'Дети 1–8 классов',
+            },
             /*
              * Course rich results need a concrete instance, not just a name.
              * Every value here is a fact stated on the page: offline, weekends,
@@ -124,13 +153,14 @@ function organization(): Json {
               },
             },
           },
-          price: '21000',
+          // Digits from the same `pricing` constant the page renders.
+          price: String(pricing.monthlyKzt),
           priceCurrency: 'KZT',
         },
         {
           '@type': 'Offer',
           name: 'Пробный урок',
-          price: '5000',
+          price: String(pricing.trialKzt),
           priceCurrency: 'KZT',
         },
       ],
@@ -203,6 +233,8 @@ export function homeGraph(): Json {
         about: { '@id': ID.organization },
         primaryImageOfPage: { '@id': ID.primaryImage },
         breadcrumb: { '@id': ID.homeBreadcrumb },
+        // The same core as <meta name="keywords">, one string as schema.org expects.
+        keywords: meta.keywords.join(', '),
       },
       {
         /*

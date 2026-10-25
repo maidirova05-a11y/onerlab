@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useId, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
 
 import { ArrowRightIcon, CheckIcon, PhoneIcon } from '@/components/icons';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +11,7 @@ import {
   type CaptchaProvider,
 } from '@/components/form/CaptchaWidget';
 import { contacts, leadForm } from '@/content/site';
+import { captureAttribution, readAttribution } from '@/lib/attribution';
 import { cn } from '@/lib/cn';
 import { formatPhoneAsTyped } from '@/lib/phone-mask';
 import { leadFormSchema, toFieldErrors, type LeadFormInput } from '@/validation/lead.schema';
@@ -56,6 +57,13 @@ export function LeadForm({ captcha }: LeadFormProps) {
   const captchaRef = useRef<CaptchaHandle | null>(null);
   const formId = useId();
   const errorSummaryId = `${formId}-error`;
+
+  // Remember which ad / post / search result brought this visitor, before the
+  // UTM tags disappear from the address bar. Runs once per page load; the
+  // helper itself decides whether to keep an earlier capture from this tab.
+  useEffect(() => {
+    captureAttribution();
+  }, []);
 
   const setField = useCallback(
     <K extends keyof LeadFormInput>(key: K, value: LeadFormInput[K]) => {
@@ -107,7 +115,9 @@ export function LeadForm({ captcha }: LeadFormProps) {
         headers: { 'Content-Type': 'application/json' },
         // `same-origin` keeps this request from ever being sent cross-site.
         credentials: 'same-origin',
-        body: JSON.stringify({ ...parsed.data, captchaToken }),
+        // Attribution rides along with the lead. The server sanitises it and
+        // never lets a bad value fail the submission (see lead.schema.ts).
+        body: JSON.stringify({ ...parsed.data, ...readAttribution(), captchaToken }),
       });
 
       const payload = (await response.json().catch(() => null)) as

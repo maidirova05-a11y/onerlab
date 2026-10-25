@@ -54,8 +54,8 @@ export function Intro() {
             preload="auto"
           />
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element -- an SVG has no
-          // intrinsic raster size for next/image to optimise; it ships as-is.
+          // An SVG has no intrinsic raster size for next/image to optimise; it ships as-is.
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={intro.fallbackSrc} alt="" className="h-full w-full object-cover" />
         )}
       </div>

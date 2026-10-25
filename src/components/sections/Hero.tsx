@@ -2,7 +2,7 @@ import { ArrowRightIcon, CheckIcon, PhoneIcon } from '@/components/icons';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
-import { contacts, hero } from '@/content/site';
+import { contacts, hero, pricing } from '@/content/site';
 
 /**
  * Hero section.
@@ -148,7 +148,7 @@ function HeroArtwork() {
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-brand">
           Пробный урок
         </p>
-        <p className="text-xl font-extrabold">5 000 ₸</p>
+        <p className="text-xl font-extrabold">{pricing.trialLabel}</p>
       </div>
     </div>
   );

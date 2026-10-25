@@ -62,6 +62,23 @@ model Lead {
   userAgent    String?    @db.VarChar(255)
   source       String?    @db.VarChar(64)
 
+  // --- Marketing attribution (read by the browser, never typed by the parent) --
+  // Which ad / post / search result produced the lead. The form captures the
+  // UTM parameters on the visitor's FIRST page view and keeps them for the tab
+  // (sessionStorage), so a parent who lands from an Instagram ad, reads for ten
+  // minutes and then submits is still credited to that ad. All optional and
+  // all sanitised by the validation layer; a missing or garbled value never
+  // blocks the submission — attribution is worth less than the lead.
+  utmSource    String?    @db.VarChar(120)
+  utmMedium    String?    @db.VarChar(120)
+  utmCampaign  String?    @db.VarChar(120)
+  utmContent   String?    @db.VarChar(120)
+  utmTerm      String?    @db.VarChar(120)
+  /// `document.referrer` on the landing view — only when it is another site.
+  referrer     String?    @db.VarChar(500)
+  /// Path + query of the first page the visitor opened, e.g. "/?utm_source=ig".
+  landingPath  String?    @db.VarChar(255)
+
   @@index([status, createdAt])
   @@index([phone])
   @@map("leads")

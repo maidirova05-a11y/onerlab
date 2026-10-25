@@ -145,12 +145,12 @@ database round-trip or an outbound CAPTCHA call.
 | --- | --- | --- | --- |
 | 1 | Origin allow-list | cross-site abuse / CSRF | `403` |
 | 2 | `Content-Type: application/json` required | simple-request CSRF | `415` |
-| 3 | Body size cap (4 KB, header **and** actual bytes) | memory exhaustion | `413` |
-| 4 | Sliding-window rate limit per IP | spam, app-layer DoS | `429` |
+| 3 | Body size cap (8 KB, header **and** actual bytes) | memory exhaustion | `413` |
+| 4 | Sliding-window rate limit per IP (count + record serialised per IP with a transaction-scoped advisory lock) | spam, app-layer DoS | `429` |
 | 5 | Honeypot field | naive bots | `201` decoy |
 | 6 | Zod validation + sanitisation | malformed / hostile input | `400` |
 | 7 | CAPTCHA verification | scripted bots | `403` |
-| 8 | Duplicate guard (same phone / 10 min) | double submits | `409` |
+| 8 | Duplicate guard (same phone / 10 min, serialised per phone with a transaction-scoped advisory lock) | double submits | `409` |
 | 9 | Prisma write | — | `201` |
 
 ### Injection & XSS
@@ -282,6 +282,18 @@ compute после простоя, и `prisma migrate deploy` падал с `P10
 ```bash
 npm run db:deploy
 ```
+
+`prisma migrate deploy` ходит в базу через `DIRECT_URL` (прямой, не pooled
+эндпоинт Neon) — без этой переменной в окружении команда не запустится.
+
+Колонки атрибуции заявок (`utm*`, `referrer`, `landingPath`, миграция
+`20261024000000_add_lead_attribution`) приложение добавляет само при первом
+обращении к заявкам — `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, тот же SQL,
+что в миграции (`src/server/db/ensure-schema.ts`), так что порядок «деплой →
+миграция» ничего не ломает. Если у роли базы нет права на `ALTER`, заявки
+сохраняются без атрибуции, а в логе будет ошибка `could not ensure lead
+attribution columns`. Миграцию всё равно накатите (`npm run db:deploy`), чтобы
+история `_prisma_migrations` совпадала со схемой.
 
 Секреты живут только в переменных окружения проекта Vercel — в репозитории
 их нет. Список требуемых ключей: `.env.example`.

@@ -37,7 +37,13 @@ export function About() {
                 раскрыть индивидуальность и поверить в себя.»
               </p>
 
-              <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line-strong pt-6">
+              {/*
+                Phones: content-sized outer columns, the middle takes the rest.
+                Equal thirds gave the middle label ("ДЛИТЕЛЬНОСТЬ УРОКА", uppercase,
+                tracked) ~87px on a 390px screen for a ~107px word, so it ran into
+                "В НЕДЕЛЮ". From `sm` the card is wide enough for thirds again.
+              */}
+              <dl className="mt-8 grid grid-cols-[auto_1fr_auto] gap-4 border-t border-line-strong pt-6 sm:grid-cols-3">
                 {about.stats.map((stat) => (
                   <div key={stat.label}>
                     <dt className="sr-only">{stat.label}</dt>

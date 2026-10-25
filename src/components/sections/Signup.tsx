@@ -2,7 +2,7 @@ import { LeadForm } from '@/components/form/LeadForm';
 import { CheckIcon, PhoneIcon, WhatsAppIcon } from '@/components/icons';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
-import { contacts, leadForm } from '@/content/site';
+import { contacts, leadForm, pricing } from '@/content/site';
 import { env } from '@/lib/env';
 import type { CaptchaProvider } from '@/components/form/CaptchaWidget';
 
@@ -38,7 +38,7 @@ export function Signup() {
 
                 <h2 className="mt-4 text-3xl font-extrabold leading-[1.15] text-ink sm:text-4xl">
                   Запишите ребенка на пробный урок за{' '}
-                  <span className="brush-underline whitespace-nowrap">5 000 ₸</span>
+                  <span className="brush-underline whitespace-nowrap">{pricing.trialLabel}</span>
                 </h2>
               </Reveal>
 

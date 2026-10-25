@@ -87,6 +87,8 @@ export function Button(props: ButtonProps) {
     );
   }
 
+  // Destructured only to strip them from the props forwarded to <button>.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { children: _children, variant: _v, size: _s, className: _c, fullWidth: _f, ...buttonProps } =
     props as ButtonAsButton;
 

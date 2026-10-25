@@ -7,13 +7,30 @@ import { adminEnabled } from '@/lib/env';
 export const dynamic = 'force-dynamic';
 
 /**
- * Only a relative, single-segment-rooted path is accepted as a redirect target.
+ * Only a path inside the panel is accepted as a redirect target.
+ *
  * Without this check `?next=https://evil.com` would make the login screen an
  * open redirect — a classic phishing primitive, since the link genuinely starts
- * at the real domain.
+ * at the real domain. The previous check (`startsWith('/')` and not `//`) still
+ * let `?next=/\evil.com` through: the WHATWG URL parser treats a backslash as a
+ * slash for http(s), so `router.push('/\evil.com')` resolved to
+ * `https://evil.com/`. The only values the proxy ever puts here are `/admin`
+ * paths, so that is all that is accepted — a single leading slash, no
+ * backslash anywhere, and URL-safe characters only.
  */
+const SAFE_NEXT_PATTERN = /^\/admin(?:[/?#][\w\-.~!$&'()*+,;=:@/?%#]*)?$/;
+
+/**
+ * A `.` or `..` path segment — plain or percent-encoded, which the URL parser
+ * resolves the same way — would walk the redirect back out of the panel:
+ * `/admin/../x` lands on `/x`. Same origin, so not an open redirect, but not
+ * "inside the panel" either. Checked on the path only; the query may say `..`.
+ */
+const DOT_SEGMENT = /(?:^|\/)(?:\.|%2e){1,2}(?=[/?#]|$)/i;
+
 function safeNext(value: string | undefined): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/admin';
+  if (!value || value.includes('\\') || !SAFE_NEXT_PATTERN.test(value)) return '/admin';
+  if (DOT_SEGMENT.test(value.split(/[?#]/, 1)[0] ?? '')) return '/admin';
   return value;
 }
 
