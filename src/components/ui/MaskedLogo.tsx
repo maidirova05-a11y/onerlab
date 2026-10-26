@@ -104,10 +104,47 @@ export function MaskedLogo({
     return () => wide.removeEventListener('change', sync);
   }, [videoMinWidth]);
 
+  /*
+   * The footage starts only once the page has LOADED and the main thread is
+   * idle — it is not part of the first paint.
+   *
+   * Both <video> elements are server-rendered with `preload="none"` and no
+   * `autoplay`, so the browser shows the poster (a frame of the same footage)
+   * and requests nothing else. With `autoplay` the 0.85 MB file was requested
+   * alongside the fonts, the stylesheet and the poster itself, and on a phone
+   * connection it competed with exactly the bytes the first screen needs: in
+   * Lighthouse's mobile model the poster's paint (the LCP) waited for it.
+   * The poster IS the opening frame, so nothing visible changes while the
+   * file loads; the film simply begins a moment after the page settles.
+   */
+  const [footageReady, setFootageReady] = useState(false);
+
+  useEffect(() => {
+    if (mediaType !== 'video') return;
+
+    let idleHandle: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        idleHandle = window.requestIdleCallback(() => setFootageReady(true), { timeout: 1500 });
+      } else {
+        timer = setTimeout(() => setFootageReady(true), 200);
+      }
+    };
+
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+
+    return () => {
+      window.removeEventListener('load', start);
+      if (idleHandle !== undefined) window.cancelIdleCallback(idleHandle);
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  }, [mediaType]);
+
   // iOS Safari only autoplays a video it can see is muted, and React never
   // writes `muted` into the server HTML (it is set as a property after
-  // hydration). So the SSR'd backdrop could sit on its first frame on an
-  // iPhone. Re-assert muted and start both copies explicitly; a rejected
+  // hydration). Re-assert muted and start both copies explicitly; a rejected
   // play() (Low Power Mode) just leaves the poster frame, which matches.
   useEffect(() => {
     const videos = [
@@ -117,6 +154,8 @@ export function MaskedLogo({
     for (const video of videos) {
       video.muted = true;
       video.playsInline = true;
+      if (!footageReady) continue;
+      video.preload = 'auto';
       if (video.paused) void video.play().catch(() => {});
     }
 
@@ -128,7 +167,7 @@ export function MaskedLogo({
     if (mine.error) queueMicrotask(fail);
     mine.addEventListener('error', fail);
     return () => mine.removeEventListener('error', fail);
-  }, [syncWith, canAffordVideo]);
+  }, [syncWith, canAffordVideo, footageReady]);
 
   // Keep this copy locked to the backdrop's playhead.
   useEffect(() => {
@@ -188,8 +227,8 @@ export function MaskedLogo({
               className="masked-logo__source"
               src={src}
               poster={fallbackSrc}
-              preload="auto"
-              autoPlay
+              // Started by the effect above once the page has loaded.
+              preload="none"
               muted
               loop
               playsInline
