@@ -14,7 +14,26 @@ import { contacts, leadForm } from '@/content/site';
 import { captureAttribution, readAttribution } from '@/lib/attribution';
 import { cn } from '@/lib/cn';
 import { formatPhoneAsTyped } from '@/lib/phone-mask';
-import { leadFormSchema, toFieldErrors, type LeadFormInput } from '@/validation/lead.schema';
+import type { LeadFormInput } from '@/validation/lead.schema';
+
+/**
+ * The schema module — and Zod with it — is fetched on demand, not with the page.
+ *
+ * Zod is the largest thing this form ships (≈130 KB of the page's JS, ≈39 KB
+ * gzipped, since Zod 4), and the form is the last section of a long landing
+ * page that most visitors read without submitting. Loading it the moment the
+ * visitor first focuses or points at the form keeps it off the critical path
+ * while making sure it has arrived long before the submit button is pressed.
+ * Validation is still the exact same schema the API uses.
+ */
+let schemaModule: Promise<typeof import('@/validation/lead.schema')> | null = null;
+function loadSchema() {
+  schemaModule ??= import('@/validation/lead.schema').catch((error: unknown) => {
+    schemaModule = null; // let the next attempt retry (e.g. after going back online)
+    throw error;
+  });
+  return schemaModule;
+}
 
 /**
  * =============================================================================
@@ -55,6 +74,9 @@ export function LeadForm({ captcha }: LeadFormProps) {
   const [status, setStatus] = useState<Status>('idle');
 
   const captchaRef = useRef<CaptchaHandle | null>(null);
+  // Guards against a second submit while the first is still validating: that
+  // step now awaits the schema chunk, so `status` alone would leave a window.
+  const inFlight = useRef(false);
   const formId = useId();
   const errorSummaryId = `${formId}-error`;
 
@@ -83,11 +105,31 @@ export function LeadForm({ captcha }: LeadFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (status === 'submitting') return;
+    if (inFlight.current || status === 'submitting') return;
 
+    inFlight.current = true;
+    try {
+      await submit();
+    } finally {
+      inFlight.current = false;
+    }
+  }
+
+  async function submit() {
     setFormError(null);
 
     // --- 1. Client-side validation (same schema as the server) --------------
+    let schema: Awaited<ReturnType<typeof loadSchema>>;
+    try {
+      schema = await loadSchema();
+    } catch {
+      // The chunk could not be fetched — offline, most likely. Same message as
+      // a failed request, since the next step would fail the same way.
+      setFormError(leadForm.genericError);
+      setStatus('error');
+      return;
+    }
+    const { leadFormSchema, toFieldErrors } = schema;
     const parsed = leadFormSchema.safeParse(values);
     if (!parsed.success) {
       const errors = toFieldErrors(parsed.error);
@@ -154,6 +196,9 @@ export function LeadForm({ captcha }: LeadFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
+      // Fetch the validation chunk as soon as the visitor engages with the form.
+      onFocus={() => void loadSchema().catch(() => {})}
+      onPointerEnter={() => void loadSchema().catch(() => {})}
       noValidate
       aria-describedby={formError ? errorSummaryId : undefined}
       className="space-y-5"
