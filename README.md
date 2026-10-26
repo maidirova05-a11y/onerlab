@@ -243,18 +243,52 @@ rejected rather than waved through.
 
 ## Scaling the rate limiter
 
-The default store is in-process, which is correct for a single Node instance. Across N
-replicas each keeps its own counters, so the effective limit becomes N × the quota.
+Counters live in Postgres (`rate_limit_hits`), so the quota holds across serverless
+instances; the in-process store is only the fallback when the database is unreachable.
+Each check is one short transaction (advisory lock, one aggregate, one insert); rows
+older than a day are pruned after the response on ~2% of requests, using a BRIN index
+on `hit_at`.
 
-`src/lib/rate-limit.ts` defines a `RateLimitStore` interface for exactly this reason —
-implement it against Redis/Upstash and swap it in `createRateLimiter`. No route handler
-changes.
+`src/lib/rate-limit.ts` defines a `RateLimitStore` interface — if the form ever sees
+enough traffic for that table to matter, implement it against Redis/Upstash and swap it
+in `createRateLimiter`. No route handler changes.
+
+---
+
+## Database connections on Vercel
+
+Every serverless instance opens its own Prisma pool, and Prisma's default pool
+size is `cpus × 2 + 1`. A traffic spike that starts twenty instances can
+therefore ask Postgres for well over a hundred connections. Point the runtime at
+the **pooled** endpoint (PgBouncer, transaction mode — Neon's `-pooler` host)
+and cap each instance:
+
+```
+DATABASE_URL="postgresql://USER:PASSWORD@HOST-pooler.REGION.aws.neon.tech/DB?sslmode=require&pgbouncer=true&connection_limit=1&pool_timeout=10&connect_timeout=15"
+DIRECT_URL="postgresql://USER:PASSWORD@HOST.REGION.aws.neon.tech/DB?sslmode=require"
+```
+
+- `pgbouncer=true` — Prisma stops using named prepared statements, which a
+  transaction-mode pooler cannot keep across transactions.
+- `connection_limit=1` — one connection per function instance; concurrency
+  comes from more instances, and PgBouncer multiplexes them. Raise to 2–3 only
+  if one instance has to run the admin page's three parallel queries faster.
+- `pool_timeout=10` — how long a query waits for that connection before failing.
+- `connect_timeout=15` — headroom for a free-tier Neon compute waking from sleep.
+- `DIRECT_URL` (unpooled) is used by `prisma migrate` only — DDL through a
+  transaction pooler is unreliable.
+
+Everything the app does inside a transaction is transaction-scoped and therefore
+pooler-safe: the per-phone and per-IP locks are `pg_advisory_xact_lock`, released
+at COMMIT/ROLLBACK. `src/lib/db.ts` keeps one `PrismaClient` per process (cached
+on `globalThis`), so the page and route-handler bundles share a single pool.
 
 ---
 
 ## Deployment checklist
 
-- [ ] `DATABASE_URL` points at production PostgreSQL **with `?sslmode=require`**
+- [ ] `DATABASE_URL` points at production PostgreSQL **with `?sslmode=require`**, via the
+      pooled endpoint with `pgbouncer=true&connection_limit=1` (see above)
 - [ ] `NEXT_PUBLIC_SITE_URL` is the real origin (drives CORS, canonical URLs, sitemap)
 - [ ] `ALLOWED_ORIGINS` is empty unless a second domain genuinely needs API access
 - [ ] `CAPTCHA_PROVIDER` + `CAPTCHA_SECRET_KEY` are set

@@ -80,6 +80,9 @@ model Lead {
   landingPath  String?    @db.VarChar(255)
 
   @@index([status, createdAt])
+  /// The admin list's default view: newest first, no status filter. The
+  /// (status, createdAt) index above cannot serve an unfiltered ORDER BY.
+  @@index([createdAt(sort: Desc)])
   @@index([phone])
   @@map("leads")
 }
@@ -95,5 +98,8 @@ model RateLimitHit {
   hitAt   DateTime @default(now()) @map("hit_at") @db.Timestamptz(6)
 
   @@index([keyHash, hitAt(sort: Desc)], map: "rate_limit_hits_key_idx")
+  /// Serves the age-based prune. BRIN: rows arrive in hit_at order, so a few
+  /// KB of block ranges replace a full scan, at almost no cost per insert.
+  @@index([hitAt], map: "rate_limit_hits_hit_at_idx", type: Brin)
   @@map("rate_limit_hits")
 }
