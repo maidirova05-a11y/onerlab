@@ -69,6 +69,21 @@ const nextConfig: NextConfig = {
   // Fail the production build on type errors / lint errors rather than shipping.
   typescript: { ignoreBuildErrors: false },
 
+  images: {
+    /*
+     * WebP only — the default, stated so nobody "upgrades" it blindly. AVIF was
+     * tried: it saves ~4 KB on the wordmark but its 4:2:0 chroma subsampling
+     * puts a visible colour fringe on the yellow "lab" badge (per-pixel delta
+     * up to 107/255 in a screenshot diff), and for the gallery photos it buys
+     * only ~20% over WebP. Not worth a softer logo.
+     *
+     * minimumCacheTTL also stays at the 4-hour default on purpose: `npm run
+     * gallery:import` overwrites photo-NN.jpg in place, and a longer TTL would
+     * keep serving the old photo from browser caches for that long.
+     */
+    formats: ['image/webp'],
+  },
+
   experimental: {
     // Only these server actions origins are trusted (CSRF defence in depth).
     serverActions: { allowedOrigins: [] },
