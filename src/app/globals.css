@@ -37,8 +37,10 @@
   --color-danger: #c0392b;
 
   /* --- Typography -------------------------------------------------------- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
-  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* 'OnerLab Tenge' covers ONE character (₸) and nothing else — see the
+     @font-face below. Listed first so it answers for that glyph only. */
+  --font-sans: 'OnerLab Tenge', var(--font-inter), ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-display: 'OnerLab Tenge', var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   /* --- Motion ------------------------------------------------------------ */
   --ease-paint: cubic-bezier(0.22, 1, 0.36, 1);
@@ -46,6 +48,36 @@
   /* --- Radii ------------------------------------------------------------- */
   --radius-card: 1.25rem;
   --radius-pill: 999px;
+}
+
+/* =============================================================================
+   The tenge sign, on its own
+   =============================================================================
+   Every price on the page ends in ₸ (U+20B8), and it is the only character on
+   any page outside the Cyrillic and Latin subsets that next/font preloads. It
+   sits in Google's "latin-ext" range, so rendering it alone cost two more font
+   files after first paint: Manrope's latin-ext (15 KB) — which turns out to
+   have no ₸ at all, so the browser then falls through to — Inter's latin-ext
+   (85 KB). 100 KB and a late re-layout for one glyph.
+
+   This face is that glyph cut out of the same Inter variable font (fontTools
+   pyftsubset --unicodes=U+20B8, all layout features, wght 100–900 axis kept),
+   1 KB, inlined so it is available on first layout with no request. With it
+   first in both stacks the latin-ext faces are never needed, and the glyph is
+   the very outline that was drawn before: Inter's, at the element's weight.
+
+   Line metrics are unaffected: a family whose unicode-range excludes the space
+   character is never the "first available font", so line height still comes
+   from Inter / Manrope. If a page ever needs other latin-ext characters, the
+   original faces still cover them — they are only skipped for ₸.
+   ============================================================================= */
+@font-face {
+  font-family: 'OnerLab Tenge';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('data:font/woff2;base64,d09GMgABAAAAAAPsABMAAAAACFwAAAOGAAQAQgAAAAAAAAAAAAAAAAAAAAAAAAAAGyAcKj9IVkFSRD9NVkFSXgZgP1NUQVSBTicmADQvbBEICjhMMF4BNgIkAwgLBgAEIAWFbAcgGx8HCC4KbGP4aCFSqa+yG1M5PxrGwp4dfkVQ2SqzembhmfcJwEZEMYVPuKaALQLDflO68fn2+3Xn4ZpgDsnU8lOfjyaPHEIyLYmoUXQl5A1lef7f233bGAaTsBN4RUkgXzGWkhQIJl0eqSGAa/Lj8wP+338vxYaW5alRImvD2XRAaZGcYPOB0ujNXWbhpSbtcUmXxz0cLdBYVwXInHnj84iXQ1EAmNxPMW6+1N0bmIN8+GMhQFswDQCBpgJdEamuDmbohoSEqC8FpIAAVSVj3sOB+z+Ed/8Q4MgjuUIIYcvxW2U+AtaOr67+kej8LO4rURo9vsWz1ZC+dTu95FZKGUhyQAJYeEzM4a72Qe2DSr2hNVT/SI8jIF9b+gk1yUKoytBWEobg9u0P18kEOHZpjARix2HeIjNw2itSqdWgRQLHuj0PBVK0SEUIYjgpY4R7jCMzBGSl5LB/QPpkMDqPYExbDpNjUcb1GpTH98s3I32XHkAgQKiI3YKm3za50unZDo37nb0aPTqi70RChraiBNqKVgO5XFD7isIW9NeGwLKWOKGtBFVFfxESxH2yyxBBqsBmiBHgC2IkxBCIURD3idEQj4gxkJZDjIX0CTEOshrEeMguI0RRaAESyJGhKVoByAFZHh29UW2ckIbWOSUzw9fbb3/69oO3tr41b0OhzTKrnXFze6BXJS1lljqdygxxZcKFRuzh4De7tpXq522Z+Iktxzbn2C8+dr74efjGz0vPzy72NHxsse2CQG7WnuN1aVP+ahYP+Pfotfu+6wvF8P//bPxB9Q9kEgh+tNSkBon/rZwlPDKVumNBaRABQbJFopViBADIBdolIRN5ArhPRmjsPklzz5IZ4ZpcZx+UjPNPKeucAQ5C0DR6qRIfk1TLzlJqJIZBrVTPUic5GPXSc54G8XFAo8w8TZPEuKVZft6hRXw80y05XtykR2L8NZvLsyagU2kYqla1Go2oeRoZNcLByALUtIDLIBMxVI8IRuMKhKhiGobxhFpVqaLSMZoIQSWRy1YlELKFquiUyRLiNrNkqggLL1CvUvV737aZNWfCnLYyq+IsCYRCs4u2OKRzOSgh9nC5QuPiW6+JqJowKLG+RFYY0WbUOQas9gO8cSSZnGWCTKKLsM2R2XS9XBapJy8VAVHuviLTFA+jE/Es1BzdOlmNepNGsAiYnZX+M54jCmjgtgA=') format('woff2');
+  unicode-range: U+20B8;
 }
 
 /* =============================================================================
