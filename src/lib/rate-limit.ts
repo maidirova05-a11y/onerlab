@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { after } from 'next/server';
+
 import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/logger';
@@ -136,6 +138,10 @@ class PostgresRateLimitStore implements RateLimitStore {
         () =>
           prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "rate_limit_hits_key_idx" ON "rate_limit_hits"("key_hash", "hit_at" DESC)`,
       )
+      .then(
+        () =>
+          prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "rate_limit_hits_hit_at_idx" ON "rate_limit_hits" USING BRIN ("hit_at")`,
+      )
       .catch((error: unknown) => {
         this.ready = null;
         throw error;
@@ -170,22 +176,24 @@ class PostgresRateLimitStore implements RateLimitStore {
        */
       const { count, first } = await prisma.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${keyHash}))`;
-        const count = await tx.rateLimitHit.count({ where });
-        const first = await tx.rateLimitHit.findFirst({
+        // Count and oldest hit in ONE statement (both come off the
+        // (key_hash, hit_at) index) — previously two round trips.
+        const window = await tx.rateLimitHit.aggregate({
           where,
-          orderBy: { hitAt: 'asc' },
-          select: { hitAt: true },
+          _count: { _all: true },
+          _min: { hitAt: true },
         });
+        const count = window._count._all;
         if (count < limit) await tx.rateLimitHit.create({ data: { keyHash } });
-        return { count, first };
+        return { count, first: window._min.hitAt };
       });
       const allowed = count < limit;
-      // Occasional cleanup keeps the table to roughly a day of rows.
-      if (Math.random() < 0.02) {
-        await prisma.rateLimitHit.deleteMany({ where: { hitAt: { lt: new Date(now - 86_400_000) } } });
-      }
+      // Occasional cleanup keeps the table to roughly a day of rows. It runs
+      // after the response is sent, so the unlucky 2% of requests no longer
+      // wait for it, and the BRIN index on hit_at keeps it off a full scan.
+      if (Math.random() < 0.02) schedulePrune(now);
 
-      const resetAt = (first?.hitAt.getTime() ?? now) + windowMs;
+      const resetAt = (first?.getTime() ?? now) + windowMs;
       const used = allowed ? count + 1 : count;
       return {
         success: allowed,
@@ -201,6 +209,24 @@ class PostgresRateLimitStore implements RateLimitStore {
       );
       return this.fallback.check(key, limit, windowMs);
     }
+  }
+}
+
+/** Deletes rows older than a day, without holding up the current request. */
+function schedulePrune(now: number): void {
+  const prune = () =>
+    prisma.rateLimitHit
+      .deleteMany({ where: { hitAt: { lt: new Date(now - 86_400_000) } } })
+      .then(() => undefined)
+      .catch((error: unknown) =>
+        logger.warn({ err: error instanceof Error ? error.message : String(error) }, 'rate-limit prune failed'),
+      );
+  try {
+    // Keeps a serverless function alive until the delete has finished.
+    after(prune);
+  } catch {
+    // Outside a request scope (scripts, tests): just run it.
+    void prune();
   }
 }
 

@@ -1,3 +1,5 @@
+import { preload } from 'react-dom';
+
 import { ArrowRightIcon } from '@/components/icons';
 import { Button } from '@/components/ui/Button';
 import { MaskedLogo } from '@/components/ui/MaskedLogo';
@@ -29,6 +31,16 @@ import { hero, intro } from '@/content/site';
 export function Intro() {
   const useVideo = intro.videoSrc.length > 0;
 
+  /*
+   * The first paint of this screen is the poster seen THROUGH the logo mask,
+   * and both files are otherwise discovered late: the mask is a CSS custom
+   * property (found only at style calculation) and a poster loads at medium
+   * priority. Hinting them from the server puts them in the HTML head, ahead
+   * of the scripts.
+   */
+  preload('/hero/logo-mask.png', { as: 'image', fetchPriority: 'high' });
+  preload(useVideo ? intro.logoStillSrc : intro.fallbackSrc, { as: 'image', fetchPriority: 'high' });
+
   return (
     <section
       // Height comes from `.intro-screen` (--intro-h) so the masked logo's
@@ -47,11 +59,14 @@ export function Intro() {
             // Same frame as the letters' poster, so a phone that is still
             // buffering (or refuses autoplay) shows the studio, not a grey box.
             poster={intro.logoStillSrc}
-            autoPlay
+            // No `autoplay`: <MaskedLogo> starts this and its own copy together
+            // once the page has loaded, so the 0.85 MB file never competes with
+            // the poster, fonts and CSS for the first paint. The poster is the
+            // opening frame, so the screen looks the same until it plays.
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
           />
         ) : (
           // An SVG has no intrinsic raster size for next/image to optimise; it ships as-is.

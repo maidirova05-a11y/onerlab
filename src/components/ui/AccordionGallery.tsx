@@ -1,6 +1,7 @@
 'use client';
 
 import { gsap } from 'gsap';
+import Image from 'next/image';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import './AccordionGallery.css';
@@ -298,10 +299,21 @@ export function AccordionGallery({
                   mediaRefs.current[i] = el;
                 }}
               >
-                {/* Plain <img>, not next/image: these panels are resized
-                    continuously by GSAP, so a fixed intrinsic layout would be
-                    fighting the animation every frame. */}
-                <img src={item.image} alt={item.alt ?? item.label ?? ''} draggable={false} loading="lazy" />
+                {/* next/image only for its srcset and AVIF/WebP — the box is
+                    still sized by the stylesheet (`.ag-panel__media img` is
+                    100% × 100%, object-fit: cover), which GSAP resizes, so the
+                    intrinsic 900×1200 never takes part in layout. `sizes`
+                    follows `--ag-media-size` (open-panel width × 1.22): ≈620px
+                    on desktop, ≈420px on tablets, the column width on phones. */}
+                <Image
+                  src={item.image}
+                  alt={item.alt ?? item.label ?? ''}
+                  width={900}
+                  height={1200}
+                  sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) 420px, 640px"
+                  draggable={false}
+                  loading="lazy"
+                />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />
             </span>

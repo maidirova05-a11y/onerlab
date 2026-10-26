@@ -28,6 +28,14 @@ export const prisma: PrismaClient =
     datasources: { db: { url: env.DATABASE_URL } },
   });
 
-if (!isProduction) {
-  globalForPrisma.prisma = prisma;
-}
+/*
+ * Cached on globalThis in production too, not only for dev hot-reload.
+ *
+ * Next.js bundles the route handlers and the pages into separate module
+ * graphs, so a plain module-level singleton is instantiated once PER GRAPH.
+ * Measured under load on one `next start` process: 18 open connections — two
+ * pools of 9 (Prisma's default of cpus*2+1) for what should be one. On
+ * serverless that doubles each instance's share of the database's connection
+ * budget. See README, "Database connections on Vercel", for the pool settings.
+ */
+globalForPrisma.prisma = prisma;

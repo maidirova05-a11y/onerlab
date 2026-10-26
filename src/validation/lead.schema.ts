@@ -108,10 +108,19 @@ const landingPathValue = z
   })
   .optional();
 
+/**
+ * Zod 4 replaced v3's `required_error` with a single `error` callback. This is
+ * the same rule: the custom text only when the field is absent; any other
+ * failure (a number where a string belongs) keeps Zod's default message.
+ */
+function requiredError(message: string) {
+  return (issue: { input?: unknown }) => (issue.input === undefined ? message : undefined);
+}
+
 export const leadFormSchema = z.object({
   /** "Имя родителя" */
   parentName: z
-    .string({ required_error: 'Укажите ваше имя' })
+    .string({ error: requiredError('Укажите ваше имя') })
     // Sanitise BEFORE the length checks, otherwise "   " would pass `min(2)`.
     .transform((value) => sanitizeText(value, 80))
     .pipe(
@@ -124,7 +133,7 @@ export const leadFormSchema = z.object({
 
   /** "Имя и возраст ребенка" — one free-text field, e.g. «Алия, 9 лет» */
   childNameAge: z
-    .string({ required_error: 'Укажите имя и возраст ребенка' })
+    .string({ error: requiredError('Укажите имя и возраст ребенка') })
     .transform((value) => sanitizeText(value, 120))
     .pipe(
       z
@@ -136,7 +145,7 @@ export const leadFormSchema = z.object({
 
   /** "Из какой школы ученик" — required. */
   school: z
-    .string({ required_error: 'Укажите школу' })
+    .string({ error: requiredError('Укажите школу') })
     .transform((value) => sanitizeText(value, 120))
     .pipe(
       z
@@ -148,11 +157,14 @@ export const leadFormSchema = z.object({
 
   /** "Телефон / WhatsApp" — normalised to E.164 as part of validation. */
   phone: z
-    .string({ required_error: 'Укажите номер телефона' })
+    .string({ error: requiredError('Укажите номер телефона') })
     .transform((value) => normalizeKzPhone(value))
     .pipe(
       z
-        .string({ invalid_type_error: 'Введите номер в формате +7 (7XX) XXX-XX-XX' })
+        .string({
+          error: (issue) =>
+            issue.code === 'invalid_type' ? 'Введите номер в формате +7 (7XX) XXX-XX-XX' : undefined,
+        })
         .regex(/^\+77\d{9}$/, 'Введите казахстанский номер в формате +7 (7XX) XXX-XX-XX'),
     ),
 
@@ -160,9 +172,7 @@ export const leadFormSchema = z.object({
    * Consent to the privacy policy. `z.literal(true)` means "false" is a
    * validation failure, not a falsy value that quietly slips through.
    */
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'Необходимо согласие на обработку персональных данных' }),
-  }),
+  consent: z.literal(true, { error: 'Необходимо согласие на обработку персональных данных' }),
 
   /**
    * HONEYPOT. Rendered off-screen and hidden from assistive technology, so a
