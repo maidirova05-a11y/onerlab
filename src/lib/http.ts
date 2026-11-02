@@ -24,6 +24,11 @@ export const ErrorCode = {
   UNSUPPORTED_MEDIA_TYPE: 'UNSUPPORTED_MEDIA_TYPE',
   PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
   DUPLICATE_SUBMISSION: 'DUPLICATE_SUBMISSION',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  LOGIN_RATE_LIMITED: 'LOGIN_RATE_LIMITED',
+  NOT_FOUND: 'NOT_FOUND',
+  NOT_CONFIGURED: 'NOT_CONFIGURED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
@@ -41,6 +46,11 @@ const SAFE_MESSAGES: Record<ErrorCodeValue, string> = {
   UNSUPPORTED_MEDIA_TYPE: 'Неверный формат запроса.',
   PAYLOAD_TOO_LARGE: 'Слишком большой объём данных.',
   DUPLICATE_SUBMISSION: 'Мы уже получили вашу заявку. Наш менеджер скоро свяжется с вами.',
+  UNAUTHORIZED: 'Требуется вход.',
+  INVALID_CREDENTIALS: 'Неверный пароль.',
+  LOGIN_RATE_LIMITED: 'Слишком много попыток входа. Попробуйте позже.',
+  NOT_FOUND: 'Заявка не найдена.',
+  NOT_CONFIGURED: 'Админ-панель не настроена.',
   INTERNAL_ERROR: 'Произошла ошибка на сервере. Попробуйте позже или позвоните нам.',
 };
 
@@ -52,6 +62,11 @@ const STATUS_BY_CODE: Record<ErrorCodeValue, number> = {
   UNSUPPORTED_MEDIA_TYPE: 415,
   PAYLOAD_TOO_LARGE: 413,
   DUPLICATE_SUBMISSION: 409,
+  UNAUTHORIZED: 401,
+  INVALID_CREDENTIALS: 401,
+  LOGIN_RATE_LIMITED: 429,
+  NOT_FOUND: 404,
+  NOT_CONFIGURED: 503,
   INTERNAL_ERROR: 500,
 };
 

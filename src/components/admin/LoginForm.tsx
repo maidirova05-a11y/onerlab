@@ -31,10 +31,10 @@ export function LoginForm({ next }: { next: string }) {
         body: JSON.stringify({ password }),
       });
 
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
 
       if (!response.ok) {
-        setError(payload?.error ?? 'Не удалось войти. Попробуйте ещё раз.');
+        setError(payload?.error?.message ?? 'Не удалось войти. Попробуйте ещё раз.');
         setPassword('');
         return;
       }
