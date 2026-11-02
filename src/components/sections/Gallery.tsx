@@ -18,7 +18,7 @@ import { contacts, gallery } from '@/content/site';
  */
 export function Gallery() {
   return (
-    <section id="gallery" className="section-wash relative scroll-mt-24 py-16 sm:py-20 lg:py-24">
+    <section id="gallery" className="relative scroll-mt-24 bg-canvas-alt py-16 sm:py-20 lg:py-24">
       <Container size="wide">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading

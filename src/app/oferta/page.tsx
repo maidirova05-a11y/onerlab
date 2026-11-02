@@ -58,13 +58,13 @@ export default function OfertaPage() {
             <span>{PAGE_TITLE}</span>
           </nav>
 
-          <h1 className="mt-6 text-3xl font-extrabold leading-tight text-ink sm:text-4xl">{oferta.title}</h1>
+          <h1 className="mt-6 text-3xl font-semibold leading-tight text-ink sm:text-4xl">{oferta.title}</h1>
           <p className="mt-4 text-sm text-ink-muted">Последнее обновление: {oferta.updated}</p>
 
           <div className="mt-10 space-y-9">
             {oferta.sections.map((section) => (
               <section key={section.title}>
-                <h2 className="text-xl font-bold text-ink">{section.title}</h2>
+                <h2 className="text-xl font-semibold text-ink">{section.title}</h2>
                 <div className="mt-3 space-y-3">
                   {section.blocks.map((block) =>
                     typeof block === 'string' ? (
@@ -88,7 +88,7 @@ export default function OfertaPage() {
           </div>
 
           <div className="mt-12 rounded-card border border-line bg-canvas-alt p-6">
-            <h2 className="text-lg font-bold text-ink">{oferta.details.title}</h2>
+            <h2 className="text-lg font-semibold text-ink">{oferta.details.title}</h2>
             <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[max-content_1fr]">
               {oferta.details.rows.map((row) => (
                 <div key={row.label} className="contents">

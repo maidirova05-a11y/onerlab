@@ -29,8 +29,8 @@ export default function NotFound() {
       <Container size="narrow" className="text-center">
         <Logo width={160} className="mx-auto" />
 
-        <p className="mt-10 font-display text-6xl font-extrabold text-brand sm:text-7xl">404</p>
-        <h1 className="mt-4 text-2xl font-extrabold text-ink sm:text-3xl">Страница не найдена</h1>
+        <p className="mt-10 font-display text-6xl font-semibold text-brand sm:text-7xl">404</p>
+        <h1 className="mt-4 text-2xl font-semibold text-ink sm:text-3xl">Страница не найдена</h1>
         <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-ink-soft">
           Похоже, такой страницы у нас нет. Вернитесь на главную — там вся информация о курсах и
           запись на пробный урок.

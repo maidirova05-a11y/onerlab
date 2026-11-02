@@ -23,20 +23,17 @@ export function Signup() {
   return (
     <section id="signup" className="relative scroll-mt-24 py-16 sm:py-20 lg:py-24">
       <Container size="wide">
-        <div className="texture-canvas relative overflow-hidden rounded-[2rem] border border-line bg-canvas-alt p-6 sm:p-10 lg:p-14">
-          <span aria-hidden className="paint-blob left-[-8%] top-[-15%] h-72 w-72 bg-brand/25" />
-          <span aria-hidden className="paint-blob bottom-[-20%] right-[-6%] h-64 w-64 bg-ink/[0.05]" />
-
+        <div className="relative overflow-hidden rounded-[2rem] border border-line bg-canvas-alt p-6 sm:p-10 lg:p-14">
           <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:gap-16">
             {/* --- Pitch column --- */}
             <div>
               <Reveal>
-                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-ink-soft">
                   <span aria-hidden className="h-2 w-2 rounded-full bg-brand" />
                   {leadForm.sectionLabel}
                 </span>
 
-                <h2 className="mt-4 text-3xl font-extrabold leading-[1.15] text-ink sm:text-4xl">
+                <h2 className="mt-4 text-3xl font-semibold leading-[1.15] text-ink sm:text-4xl">
                   Запишите ребенка на пробный урок за{' '}
                   <span className="brush-underline whitespace-nowrap">{pricing.trialLabel}</span>
                 </h2>
@@ -74,7 +71,7 @@ export function Signup() {
                   <div className="mt-3 flex flex-wrap gap-3">
                     <a
                       href={`tel:${contacts.phoneE164}`}
-                      className="inline-flex h-11 items-center gap-2 rounded-pill border-2 border-line-strong bg-canvas px-4 text-sm font-bold text-ink transition-colors hover:border-ink"
+                      className="inline-flex h-11 items-center gap-2 rounded-pill border-2 border-line-strong bg-canvas px-4 text-sm font-semibold text-ink transition-colors hover:border-ink"
                     >
                       <PhoneIcon className="h-4 w-4 text-brand-strong" />
                       {contacts.phoneDisplay}
@@ -83,7 +80,7 @@ export function Signup() {
                       href={contacts.whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-11 items-center gap-2 rounded-pill border-2 border-line-strong bg-canvas px-4 text-sm font-bold text-ink transition-colors hover:border-ink"
+                      className="inline-flex h-11 items-center gap-2 rounded-pill border-2 border-line-strong bg-canvas px-4 text-sm font-semibold text-ink transition-colors hover:border-ink"
                     >
                       <WhatsAppIcon className="h-4 w-4 text-brand-strong" />
                       WhatsApp
@@ -95,8 +92,8 @@ export function Signup() {
 
             {/* --- Form column --- */}
             <Reveal delay={120}>
-              <div className="rounded-card border border-line bg-canvas p-6 shadow-[0_20px_50px_rgba(51,51,51,0.08)] sm:p-8">
-                <p className="mb-6 font-display text-xl font-bold text-ink">{leadForm.formLabel}</p>
+              <div className="rounded-card border border-line bg-canvas p-6 shadow-[0_8px_24px_rgba(51,51,51,0.06)] sm:p-8">
+                <p className="mb-6 font-display text-xl font-semibold text-ink">{leadForm.formLabel}</p>
                 <LeadForm captcha={captcha} />
               </div>
             </Reveal>

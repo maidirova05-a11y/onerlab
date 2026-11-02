@@ -128,7 +128,7 @@ export default function PrivacyPage() {
             <span>Политика конфиденциальности</span>
           </nav>
 
-          <h1 className="mt-6 text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
+          <h1 className="mt-6 text-3xl font-semibold leading-tight text-ink sm:text-4xl">
             Политика конфиденциальности
           </h1>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
           <div className="mt-10 space-y-9">
             {sections.map((section) => (
               <section key={section.title}>
-                <h2 className="text-xl font-bold text-ink">{section.title}</h2>
+                <h2 className="text-xl font-semibold text-ink">{section.title}</h2>
                 <div className="mt-3 space-y-3">
                   {section.body.map((paragraph) => (
                     <p
@@ -155,10 +155,10 @@ export default function PrivacyPage() {
           </div>
 
           <div className="mt-12 rounded-card border border-line bg-canvas-alt p-6">
-            <h2 className="text-lg font-bold text-ink">Остались вопросы?</h2>
+            <h2 className="text-lg font-semibold text-ink">Остались вопросы?</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
               Позвоните нам по номеру{' '}
-              <a href={`tel:${contacts.phoneE164}`} className="font-bold text-ink underline underline-offset-2">
+              <a href={`tel:${contacts.phoneE164}`} className="font-semibold text-ink underline underline-offset-2">
                 {contacts.phoneDisplay}
               </a>{' '}
               — ответим на любой вопрос об обработке данных.

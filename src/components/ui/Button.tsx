@@ -11,7 +11,7 @@ type Size = 'md' | 'lg';
 // real utilities, so the design tokens stay in one place.
 const BASE =
   'inline-flex items-center justify-center gap-2 font-semibold rounded-pill ' +
-  'transition-all duration-200 ease-paint select-none text-center ' +
+  'transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-paint select-none text-center ' +
   'active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:active:translate-y-0';
 
 /**
