@@ -29,6 +29,8 @@ export const ErrorCode = {
   LOGIN_RATE_LIMITED: 'LOGIN_RATE_LIMITED',
   NOT_FOUND: 'NOT_FOUND',
   NOT_CONFIGURED: 'NOT_CONFIGURED',
+  METHOD_NOT_ALLOWED: 'METHOD_NOT_ALLOWED',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
@@ -51,6 +53,8 @@ const SAFE_MESSAGES: Record<ErrorCodeValue, string> = {
   LOGIN_RATE_LIMITED: 'Слишком много попыток входа. Попробуйте позже.',
   NOT_FOUND: 'Заявка не найдена.',
   NOT_CONFIGURED: 'Админ-панель не настроена.',
+  METHOD_NOT_ALLOWED: 'Метод не поддерживается.',
+  SERVICE_UNAVAILABLE: 'Сервис временно недоступен.',
   INTERNAL_ERROR: 'Произошла ошибка на сервере. Попробуйте позже или позвоните нам.',
 };
 
@@ -67,6 +71,8 @@ const STATUS_BY_CODE: Record<ErrorCodeValue, number> = {
   LOGIN_RATE_LIMITED: 429,
   NOT_FOUND: 404,
   NOT_CONFIGURED: 503,
+  METHOD_NOT_ALLOWED: 405,
+  SERVICE_UNAVAILABLE: 503,
   INTERNAL_ERROR: 500,
 };
 

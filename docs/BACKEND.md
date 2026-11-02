@@ -16,6 +16,6 @@
 
 **Database.** Prisma only, parameterised (tagged `$executeRaw`; the few `*Unsafe` calls run constant DDL). `DATABASE_URL` is pooled, `DIRECT_URL` is for `migrate` only. Pool size is set via the URL (`connection_limit`). Migrations live in `prisma/migrations`, are additive and idempotent (`IF NOT EXISTS`), and are applied with `npm run db:deploy`; never `db push` on a real database. Add an index for every filtered/sorted column and keep the Prisma schema and SQL in sync.
 
-**Health.** `GET /api/health` returns 200 `{status:"ok"}` or 503 `{status:"degraded"}` after a `SELECT 1`.
+**Health.** `GET /api/health` returns 200 `{status:"ok"}` or 503 with a standard `SERVICE_UNAVAILABLE` error envelope after a `SELECT 1`.
 
 **Naming.** Files `kebab-case`, services `*.service.ts`, schemas `*.schema.ts`, error codes `UPPER_SNAKE`, routes export `runtime = 'nodejs'` and `dynamic = 'force-dynamic'`.
