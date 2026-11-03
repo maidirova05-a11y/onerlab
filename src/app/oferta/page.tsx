@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 export default function OfertaPage() {
   return (
     <>
-      <Header />
+      <Header alwaysVisible />
 
       <main id="main" className="relative pt-28 pb-16 sm:pt-32 sm:pb-20">
         <Container size="narrow">

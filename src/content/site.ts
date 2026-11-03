@@ -37,11 +37,11 @@ export const pricing = {
 } as const;
 
 export const nav = [
-  { href: '#about', label: 'О нас' },
-  { href: '#advantages', label: 'Преимущества' },
-  { href: '#program', label: 'Программа' },
-  { href: '#gallery', label: 'Галерея' },
-  { href: '#contacts', label: 'Контакты' },
+  { href: '/#about', label: 'О нас' },
+  { href: '/#advantages', label: 'Преимущества' },
+  { href: '/#program', label: 'Программа' },
+  { href: '/#gallery', label: 'Галерея' },
+  { href: '/#contacts', label: 'Контакты' },
 ] as const;
 
 export const hero = {

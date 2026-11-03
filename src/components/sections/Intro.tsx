@@ -38,7 +38,8 @@ export function Intro() {
    * priority. Hinting them from the server puts them in the HTML head, ahead
    * of the scripts.
    */
-  preload('/hero/logo-mask.png', { as: 'image', fetchPriority: 'high' });
+  // CSS mask-image is always fetched in CORS mode, so the hint must match or it is wasted.
+  preload('/hero/logo-mask.png', { as: 'image', fetchPriority: 'high', crossOrigin: 'anonymous' });
   preload(useVideo ? intro.logoStillSrc : intro.fallbackSrc, { as: 'image', fetchPriority: 'high' });
 
   return (

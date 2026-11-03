@@ -16,7 +16,8 @@ import { cn } from '@/lib/cn';
  * all that fits and "call us" is the highest-intent action a parent takes from
  * a phone. The nav links and the yellow CTA appear from `lg` upward.
  */
-export function Header() {
+/** `alwaysVisible`: inner pages have no full-screen hero, so the bar must not hide at the top. */
+export function Header({ alwaysVisible = false }: { alwaysVisible?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -63,7 +64,7 @@ export function Header() {
       className={cn(
         'group fixed inset-x-0 top-0 z-50 transition-[transform,opacity,border-color] duration-300 ease-paint',
         'border-b bg-canvas',
-        scrolled
+        scrolled || alwaysVisible
           ? 'translate-y-0 border-line opacity-100'
           // Hidden only from `lg` up. On a phone the bar IS the navigation —
           // the burger lives in it — so hiding it leaves the first screen with
@@ -124,7 +125,7 @@ export function Header() {
               and the button stays visible on phones. See the note in lib/cn.ts.
             */}
             <div className="hidden lg:block">
-              <Button href="#signup">{hero.primaryCta}</Button>
+              <Button href="/#signup">{hero.primaryCta}</Button>
             </div>
 
             <button
@@ -165,7 +166,7 @@ export function Header() {
 
             {/* Wrapper handles closing the drawer; Button stays a pure link. */}
             <div className="mt-5" onClick={() => setMenuOpen(false)}>
-              <Button href="#signup" size="lg" fullWidth>
+              <Button href="/#signup" size="lg" fullWidth>
                 {hero.primaryCta}
               </Button>
             </div>

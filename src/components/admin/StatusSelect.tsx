@@ -36,6 +36,12 @@ export function StatusSelect({
         body: JSON.stringify({ status: next }),
       });
 
+      if (response.status === 401) {
+        // Session expired: the proxy answers with the UNAUTHORIZED envelope.
+        router.push('/admin/login?next=/admin');
+        return;
+      }
+
       if (!response.ok) {
         setStatus(previous);
         setFailed(true);
