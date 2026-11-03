@@ -47,7 +47,7 @@ export function Footer() {
 
           {/* Contacts */}
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-brand">
+            <h2 className="text-sm font-medium text-white/60">
               {footer.contactsLabel}
             </h2>
             {/* `min-h-11` keeps each contact link at a 44px touch target on phones. */}
@@ -55,7 +55,7 @@ export function Footer() {
               <li>
                 <a
                   href={`tel:${contacts.phoneE164}`}
-                  className="inline-flex min-h-11 items-center gap-3 font-bold text-white transition-colors hover:text-brand"
+                  className="inline-flex min-h-11 items-center gap-3 font-semibold text-white transition-colors hover:text-brand"
                 >
                   <PhoneIcon className="h-5 w-5 shrink-0 text-brand" />
                   {contacts.phoneDisplay}
@@ -82,7 +82,7 @@ export function Footer() {
           {/* Navigation + legal */}
           <div className="grid grid-cols-2 gap-8 lg:block">
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-brand">
+              <h2 className="text-sm font-medium text-white/60">
                 {footer.navLabel}
               </h2>
               <ul className="mt-3 space-y-0.5 text-sm">
@@ -100,7 +100,7 @@ export function Footer() {
             </div>
 
             <div className="lg:mt-8">
-              <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-brand lg:sr-only">
+              <h2 className="text-sm font-medium text-white/60 lg:sr-only">
                 {footer.legalLabel}
               </h2>
               <ul className="mt-3 space-y-0.5 text-sm lg:mt-1">

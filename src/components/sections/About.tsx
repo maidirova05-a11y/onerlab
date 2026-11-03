@@ -1,4 +1,3 @@
-import { SparkIcon } from '@/components/icons';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -24,22 +23,15 @@ export function About() {
 
           {/* Mission card — the one place the brand promise is stated plainly. */}
           <Reveal delay={160}>
-            <div className="texture-canvas relative overflow-hidden rounded-card border border-line bg-canvas-alt p-7 sm:p-9">
-              <span
-                aria-hidden
-                className="paint-blob right-[-20%] top-[-25%] h-48 w-48 bg-brand/30"
-              />
-
-              <SparkIcon className="h-9 w-9 text-brand-strong" />
-
-              <p className="mt-5 font-display text-xl font-bold leading-snug text-ink sm:text-2xl">
+            <div className="relative overflow-hidden rounded-card border border-line bg-canvas-alt p-7 sm:p-9">
+              <p className="font-display text-xl font-semibold leading-snug text-ink sm:text-2xl">
                 «Наша миссия — развивать творческий потенциал ребенка через искусство, помогая ему
                 раскрыть индивидуальность и поверить в себя.»
               </p>
 
               {/*
                 Phones: content-sized outer columns, the middle takes the rest.
-                Equal thirds gave the middle label ("ДЛИТЕЛЬНОСТЬ УРОКА", uppercase,
+                Equal thirds gave the middle label ("Длительность урока",
                 tracked) ~87px on a 390px screen for a ~107px word, so it ran into
                 "В НЕДЕЛЮ". From `sm` the card is wide enough for thirds again.
               */}
@@ -48,10 +40,10 @@ export function About() {
                   <div key={stat.label}>
                     <dt className="sr-only">{stat.label}</dt>
                     <dd>
-                      <span className="block font-display text-2xl font-extrabold text-ink sm:text-3xl">
+                      <span className="block font-display text-2xl font-semibold text-ink sm:text-3xl">
                         {stat.value}
                       </span>
-                      <span className="mt-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                      <span className="mt-1 block text-sm text-ink-muted">
                         {stat.label}
                       </span>
                     </dd>

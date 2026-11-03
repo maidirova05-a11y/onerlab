@@ -38,7 +38,8 @@ export function Intro() {
    * priority. Hinting them from the server puts them in the HTML head, ahead
    * of the scripts.
    */
-  preload('/hero/logo-mask.png', { as: 'image', fetchPriority: 'high' });
+  // CSS mask-image is always fetched in CORS mode, so the hint must match or it is wasted.
+  preload('/hero/logo-mask.png', { as: 'image', fetchPriority: 'high', crossOrigin: 'anonymous' });
   preload(useVideo ? intro.logoStillSrc : intro.fallbackSrc, { as: 'image', fetchPriority: 'high' });
 
   return (
@@ -108,7 +109,7 @@ export function Intro() {
               className="w-full max-w-[340px] sm:max-w-[520px] lg:max-w-[760px]"
             />
 
-            <p className="intro-rise intro-rise--1 mt-6 text-lg font-bold text-white sm:text-xl lg:text-2xl">{intro.tagline}</p>
+            <p className="intro-rise intro-rise--1 mt-6 text-lg font-semibold text-white sm:text-xl lg:text-2xl">{intro.tagline}</p>
             <p className="intro-rise intro-rise--2 mt-3 max-w-xl text-sm text-white/70 sm:text-base">{intro.subline}</p>
 
             <div className="intro-rise intro-rise--3 mt-9">
@@ -124,10 +125,10 @@ export function Intro() {
       {/* --- Scroll cue --- */}
       <a
         href="#about"
-        className="intro-rise intro-rise--4 absolute inset-x-0 bottom-7 z-10 mx-auto flex w-fit flex-col items-center gap-2 text-xs font-semibold tracking-wide text-white/60 uppercase transition-colors hover:text-white"
+        className="intro-rise intro-rise--4 absolute inset-x-0 bottom-7 z-10 mx-auto flex w-fit flex-col items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
       >
         {intro.scrollCue}
-        <span aria-hidden className="block h-9 w-[1.5px] animate-pulse bg-white/40" />
+        <span aria-hidden className="block h-9 w-[1.5px] bg-white/40" />
       </a>
     </section>
   );

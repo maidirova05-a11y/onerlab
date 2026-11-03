@@ -43,9 +43,9 @@ export function Faq() {
                 // is the one nearly everyone came to check.
                 open={index === 0}
               >
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-1 py-4 text-left text-base font-bold text-ink transition-colors hover:text-ink-soft sm:text-lg [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-1 py-4 text-left text-base font-semibold text-ink transition-colors hover:text-ink-soft sm:text-lg [&::-webkit-details-marker]:hidden">
                   {/* h3 keeps the outline sane: h2 for the section, h3 per question. */}
-                  <h3 className="text-base font-bold sm:text-lg">{item.q}</h3>
+                  <h3 className="text-base font-semibold sm:text-lg">{item.q}</h3>
 
                   <span
                     aria-hidden

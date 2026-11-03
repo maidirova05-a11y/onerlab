@@ -46,7 +46,7 @@ export default async function AdminLoginPage({
       <div className="w-full max-w-md rounded-[1.75rem] border border-line bg-canvas p-8 shadow-[0_20px_60px_-30px_rgba(51,51,51,0.35)] sm:p-10">
         <Logo href="/" width={132} />
 
-        <h1 className="mt-7 text-2xl font-extrabold text-ink">Панель заявок</h1>
+        <h1 className="mt-7 text-2xl font-semibold text-ink">Панель заявок</h1>
         <p className="mt-2 text-sm text-ink-muted">
           Введите пароль, чтобы посмотреть заявки на пробный урок.
         </p>

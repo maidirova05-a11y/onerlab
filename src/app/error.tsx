@@ -30,11 +30,7 @@ export default function GlobalError({
   return (
     <main className="flex min-h-dvh items-center bg-canvas py-20">
       <Container size="narrow" className="text-center">
-        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-soft text-3xl">
-          🎨
-        </span>
-
-        <h1 className="mt-6 text-2xl font-extrabold text-ink sm:text-3xl">Что-то пошло не так</h1>
+        <h1 className="text-2xl font-semibold text-ink sm:text-3xl">Что-то пошло не так</h1>
         <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-ink-soft">
           Мы уже знаем о проблеме и скоро её исправим. Попробуйте обновить страницу — или просто
           позвоните нам, мы запишем вас на пробный урок по телефону.

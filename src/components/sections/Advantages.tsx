@@ -13,7 +13,7 @@ import { advantages } from '@/content/site';
  */
 export function Advantages() {
   return (
-    <section id="advantages" className="section-wash relative scroll-mt-24 py-16 sm:py-20 lg:py-24">
+    <section id="advantages" className="relative bg-canvas-alt scroll-mt-24 py-16 sm:py-20 lg:py-24">
       <Container size="wide">
         <SectionHeading
           label={advantages.sectionLabel}
@@ -28,21 +28,12 @@ export function Advantages() {
 
             return (
               <Reveal as="li" key={item.title} delay={index * 70}>
-                <article className="group h-full rounded-card border border-line bg-canvas p-6 transition-all duration-300 ease-paint hover:-translate-y-1 hover:border-brand hover:shadow-[0_16px_36px_rgba(51,51,51,0.09)] sm:p-7">
-                  {/* Numbered chip doubles as the icon plate. */}
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-ink transition-colors duration-300 group-hover:bg-brand">
-                      <Icon className="h-6 w-6" />
-                    </span>
-                    <span
-                      aria-hidden
-                      className="font-display text-2xl font-extrabold text-line-strong transition-colors duration-300 group-hover:text-brand"
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                  </div>
+                <article className="group h-full rounded-card border border-line bg-canvas p-6 transition-colors duration-200 ease-paint hover:border-line-strong sm:p-7">
+                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-ink">
+                    <Icon className="h-6 w-6" />
+                  </span>
 
-                  <h3 className="mt-5 text-lg font-bold leading-snug text-ink">{item.title}</h3>
+                  <h3 className="mt-5 text-lg font-semibold leading-snug text-ink">{item.title}</h3>
                   <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">{item.description}</p>
                 </article>
               </Reveal>

@@ -31,10 +31,10 @@ export function LoginForm({ next }: { next: string }) {
         body: JSON.stringify({ password }),
       });
 
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
 
       if (!response.ok) {
-        setError(payload?.error ?? 'Не удалось войти. Попробуйте ещё раз.');
+        setError(payload?.error?.message ?? 'Не удалось войти. Попробуйте ещё раз.');
         setPassword('');
         return;
       }
@@ -83,7 +83,7 @@ export function LoginForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={pending || password.length === 0}
-        className="mt-5 inline-flex w-full items-center justify-center rounded-pill bg-brand px-6 py-3.5 text-base font-bold text-ink transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-5 inline-flex w-full items-center justify-center rounded-pill bg-brand px-6 py-3.5 text-base font-semibold text-ink transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
       >
         {pending ? 'Проверяем…' : 'Войти'}
       </button>

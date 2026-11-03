@@ -5,7 +5,6 @@ import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { BrushLayer } from '@/components/ui/BrushLayer';
-import { PaintField } from '@/components/ui/PaintField';
 
 import { meta } from '@/content/site';
 import { env } from '@/lib/env';
@@ -139,22 +138,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${inter.variable} ${manrope.variable}`}>
-      {/*
-        `relative` is what lets <PaintField> stretch over the whole document:
-        it is the positioned ancestor the field's `absolute inset-0` resolves
-        against, so the field is exactly as tall as the page.
-      */}
       <body className="relative min-h-dvh bg-canvas antialiased">
         {/* Keyboard users can jump straight past the header navigation. */}
         <a
           href="#main"
-          className="sr-only-focusable absolute left-4 top-4 z-[100] rounded-pill bg-ink px-5 py-3 text-sm font-bold text-white"
+          className="sr-only-focusable absolute left-4 top-4 z-[100] rounded-pill bg-ink px-5 py-3 text-sm font-semibold text-white"
         >
           Перейти к содержимому
         </a>
-
-        {/* Decorative background, behind everything. Scrolls with the page. */}
-        <PaintField />
 
         {/*
           The brush, now site-wide rather than hero-only.

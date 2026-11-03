@@ -173,10 +173,9 @@ export async function OPTIONS(request: Request): Promise<NextResponse> {
  * through to a framework default.
  */
 export async function GET(): Promise<NextResponse> {
-  return NextResponse.json(
-    { success: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Метод не поддерживается.' } },
-    { status: 405, headers: { Allow: 'POST, OPTIONS' } },
-  );
+  return jsonError(new AppError(ErrorCode.METHOD_NOT_ALLOWED), newRequestId(), {
+    headers: { Allow: 'POST, OPTIONS' },
+  });
 }
 
 /**

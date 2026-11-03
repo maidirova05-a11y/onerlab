@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin-session';
 import { CAPTCHA_SCRIPT_ORIGINS } from '@/lib/captcha';
 import { adminEnabled, env, isProduction } from '@/lib/env';
+import { AppError, ErrorCode, jsonError, newRequestId } from '@/lib/http';
 import { GOOGLE_ANALYTICS_ORIGINS } from '@/lib/google-analytics';
 import { YANDEX_METRIKA_ORIGIN, YANDEX_METRIKA_ORIGINS } from '@/lib/yandex-metrika';
 
@@ -136,7 +137,7 @@ async function guardAdmin(request: NextRequest): Promise<NextResponse | null> {
 
   if (!adminEnabled) {
     return pathname.startsWith('/api/')
-      ? NextResponse.json({ success: false, error: 'Админ-панель не настроена.' }, { status: 503 })
+      ? jsonError(new AppError(ErrorCode.NOT_CONFIGURED), newRequestId())
       : new NextResponse('Admin panel is not configured.', {
           status: 503,
           headers: { 'content-type': 'text/plain; charset=utf-8' },
@@ -148,7 +149,7 @@ async function guardAdmin(request: NextRequest): Promise<NextResponse | null> {
 
   // An API caller gets a 401 it can act on; a browser gets sent to the form.
   if (pathname.startsWith('/api/')) {
-    return NextResponse.json({ success: false, error: 'Требуется вход.' }, { status: 401 });
+    return jsonError(new AppError(ErrorCode.UNAUTHORIZED), newRequestId());
   }
 
   const loginUrl = new URL('/admin/login', request.url);

@@ -16,7 +16,8 @@ import { cn } from '@/lib/cn';
  * all that fits and "call us" is the highest-intent action a parent takes from
  * a phone. The nav links and the yellow CTA appear from `lg` upward.
  */
-export function Header() {
+/** `alwaysVisible`: inner pages have no full-screen hero, so the bar must not hide at the top. */
+export function Header({ alwaysVisible = false }: { alwaysVisible?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -61,10 +62,10 @@ export function Header() {
         see, so any focus inside brings the whole bar back.
       */
       className={cn(
-        'group fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-paint',
-        'border-b bg-canvas/90 backdrop-blur-md',
-        scrolled
-          ? 'translate-y-0 border-line opacity-100 shadow-[0_1px_20px_rgba(51,51,51,0.06)]'
+        'group fixed inset-x-0 top-0 z-50 transition-[transform,opacity,border-color] duration-300 ease-paint',
+        'border-b bg-canvas',
+        scrolled || alwaysVisible
+          ? 'translate-y-0 border-line opacity-100'
           // Hidden only from `lg` up. On a phone the bar IS the navigation —
           // the burger lives in it — so hiding it leaves the first screen with
           // nothing to tap but the CTA, which reads as a dead page.
@@ -73,13 +74,10 @@ export function Header() {
     >
       <Container size="wide">
         <div
-          className={cn(
-            'flex items-center justify-between gap-4 transition-all duration-300',
-            scrolled ? 'h-16' : 'h-20',
-          )}
+          className="flex h-16 items-center justify-between gap-4"
         >
           {/* Logo — left, per brief */}
-          <Logo width={scrolled ? 112 : 128} priority className="transition-all duration-300" />
+          <Logo width={120} priority />
 
           {/* Desktop navigation */}
           <nav aria-label="Основная навигация" className="hidden lg:block">
@@ -101,7 +99,7 @@ export function Header() {
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href={`tel:${contacts.phoneE164}`}
-              className="hidden items-center gap-2 rounded-pill px-3 py-2 text-sm font-bold text-ink transition-colors hover:bg-canvas-alt md:inline-flex"
+              className="hidden items-center gap-2 rounded-pill px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-canvas-alt md:inline-flex"
             >
               <PhoneIcon className="h-4 w-4 text-brand-strong" />
               {contacts.phoneDisplay}
@@ -127,7 +125,7 @@ export function Header() {
               and the button stays visible on phones. See the note in lib/cn.ts.
             */}
             <div className="hidden lg:block">
-              <Button href="#signup">{hero.primaryCta}</Button>
+              <Button href="/#signup">{hero.primaryCta}</Button>
             </div>
 
             <button
@@ -168,14 +166,14 @@ export function Header() {
 
             {/* Wrapper handles closing the drawer; Button stays a pure link. */}
             <div className="mt-5" onClick={() => setMenuOpen(false)}>
-              <Button href="#signup" size="lg" fullWidth>
+              <Button href="/#signup" size="lg" fullWidth>
                 {hero.primaryCta}
               </Button>
             </div>
 
             <a
               href={`tel:${contacts.phoneE164}`}
-              className="mt-3 flex items-center justify-center gap-2 py-2 text-base font-bold text-ink"
+              className="mt-3 flex items-center justify-center gap-2 py-2 text-base font-semibold text-ink"
             >
               <PhoneIcon className="h-5 w-5 text-brand-strong" />
               {contacts.phoneDisplay}

@@ -25,8 +25,9 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
     <script
       type="application/ld+json"
       suppressHydrationWarning
-      // Safe: `data` is always a locally-built object literal, never user input.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      // `data` is a locally-built object literal; `<` is escaped anyway so a
+      // future string containing "</script>" cannot close the tag early.
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
     />
   );
 }

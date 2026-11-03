@@ -377,7 +377,7 @@ function Field({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-bold text-ink">
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold text-ink">
         {label}
         {required ? (
           <span aria-hidden className="ml-1 text-brand-strong">
@@ -442,7 +442,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         <CheckIcon className="h-8 w-8 text-ink" />
       </span>
 
-      <h3 className="mt-6 font-display text-2xl font-extrabold text-ink">
+      <h3 className="mt-6 font-display text-2xl font-semibold text-ink">
         {leadForm.success.title}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-ink-soft">

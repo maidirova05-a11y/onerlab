@@ -71,7 +71,7 @@ export default async function AdminPage({
         <div className="flex items-center gap-4">
           <Logo href="/" width={120} />
           <div>
-            <h1 className="text-xl font-extrabold text-ink sm:text-2xl">Заявки</h1>
+            <h1 className="text-xl font-semibold text-ink sm:text-2xl">Заявки</h1>
             <p className="text-sm text-ink-muted">Всего в базе: {counts.total}</p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default async function AdminPage({
         />
         <button
           type="submit"
-          className="rounded-pill bg-ink px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="rounded-pill bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Найти
         </button>
@@ -123,14 +123,14 @@ export default async function AdminPage({
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-canvas">
         <table className="w-full min-w-[1120px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-line bg-canvas-alt text-xs uppercase tracking-wide text-ink-muted">
-              <th scope="col" className="px-4 py-3 font-bold">Дата</th>
-              <th scope="col" className="px-4 py-3 font-bold">Родитель</th>
-              <th scope="col" className="px-4 py-3 font-bold">Ребёнок и возраст</th>
-              <th scope="col" className="px-4 py-3 font-bold">Школа</th>
-              <th scope="col" className="px-4 py-3 font-bold">Телефон</th>
-              <th scope="col" className="px-4 py-3 font-bold">Источник</th>
-              <th scope="col" className="px-4 py-3 font-bold">Статус</th>
+            <tr className="border-b border-line bg-canvas-alt text-sm text-ink-muted">
+              <th scope="col" className="px-4 py-3 font-semibold">Дата</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Родитель</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Ребёнок и возраст</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Школа</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Телефон</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Источник</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Статус</th>
             </tr>
           </thead>
           <tbody>
@@ -164,7 +164,7 @@ export default async function AdminPage({
                           href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-bold text-green-700 hover:underline"
+                          className="text-xs font-semibold text-green-700 hover:underline"
                         >
                           WhatsApp
                         </a>
@@ -238,7 +238,7 @@ function FilterTile({
       <span className={`block text-xs font-semibold ${active ? 'text-white/70' : 'text-ink-muted'}`}>
         {label}
       </span>
-      <span className="mt-0.5 block text-2xl font-extrabold">{value}</span>
+      <span className="mt-0.5 block text-2xl font-semibold">{value}</span>
     </Link>
   );
 }

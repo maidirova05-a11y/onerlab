@@ -37,11 +37,11 @@ export const pricing = {
 } as const;
 
 export const nav = [
-  { href: '#about', label: 'О нас' },
-  { href: '#advantages', label: 'Преимущества' },
-  { href: '#program', label: 'Программа' },
-  { href: '#gallery', label: 'Галерея' },
-  { href: '#contacts', label: 'Контакты' },
+  { href: '/#about', label: 'О нас' },
+  { href: '/#advantages', label: 'Преимущества' },
+  { href: '/#program', label: 'Программа' },
+  { href: '/#gallery', label: 'Галерея' },
+  { href: '/#contacts', label: 'Контакты' },
 ] as const;
 
 export const hero = {
@@ -109,7 +109,7 @@ export const about = {
 export const advantages = {
   sectionLabel: 'Преимущества',
   title: 'Почему родители выбирают OnerLab',
-  subtitle: 'Всё, что нужно для спокойствия родителя и роста ребенка.',
+  subtitle: 'Всё, что нужно для спокойствия родителя и роста ребенка',
   items: [
     {
       icon: 'palette',
@@ -249,7 +249,7 @@ export const faq = {
   sectionLabel: 'Вопросы',
   title: 'Частые вопросы о занятиях',
   subtitle:
-    'Коротко отвечаем на то, что чаще всего спрашивают родители перед первым уроком.',
+    'Коротко отвечаем на то, что чаще всего спрашивают родители перед первым уроком',
   items: [
     {
       q: 'С какого возраста можно записать ребенка на курсы рисования?',

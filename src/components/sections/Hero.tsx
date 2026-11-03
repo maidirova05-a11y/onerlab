@@ -18,7 +18,7 @@ import { contacts, hero, pricing } from '@/content/site';
  */
 export function Hero() {
   return (
-    <section className="texture-canvas relative pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-28">
+    <section className="relative pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-28">
       <Container size="wide" className="relative z-10">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* --- Copy column --- */}
@@ -27,7 +27,7 @@ export function Hero() {
               than its track and get clipped on narrow phones. */}
           <div className="min-w-0">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-pill border border-line bg-canvas px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-ink-soft shadow-sm">
+              <span className="inline-flex items-center gap-2 text-sm font-medium text-ink-soft">
                 <span aria-hidden className="h-2 w-2 rounded-full bg-brand" />
                 {hero.eyebrow}
               </span>
@@ -42,7 +42,7 @@ export function Hero() {
                 377px box inside a 335px column on a 375px phone — and grid items
                 default to `min-width: auto`, so it would overflow and get clipped.
               */}
-              <h1 className="mt-6 text-[2.1rem] font-extrabold leading-[1.1] text-ink sm:text-5xl lg:text-[3.5rem]">
+              <h1 className="mt-6 text-[2.1rem] font-semibold leading-[1.1] text-ink sm:text-5xl lg:text-[3.5rem]">
                 Раскройте творческий <span className="brush-underline">потенциал</span> вашего
                 ребенка с OnerLab
               </h1>
@@ -76,7 +76,7 @@ export function Hero() {
             <Reveal delay={320}>
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
                 {hero.highlights.map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                  <li key={item} className="flex items-center gap-2 text-sm text-ink-soft">
                     <CheckIcon className="h-4 w-4 shrink-0 text-brand-strong" />
                     {item}
                   </li>
@@ -104,11 +104,11 @@ function HeroArtwork() {
   return (
     <div aria-hidden className="relative mx-auto max-w-md">
       {/* Back canvas — tilted, yellow */}
-      <div className="absolute -left-6 top-8 h-[74%] w-[62%] rotate-[-7deg] rounded-2xl bg-brand/85 shadow-[0_18px_45px_rgba(51,51,51,0.16)]" />
+      <div className="absolute -left-5 top-5 h-[74%] w-[62%] rounded-2xl bg-brand" />
 
       {/* Front canvas — white, holds the illustration */}
-      <div className="relative rotate-[3deg] rounded-2xl border border-line bg-canvas p-4 shadow-[0_26px_60px_rgba(51,51,51,0.14)]">
-        <div className="texture-canvas overflow-hidden rounded-xl border border-line bg-canvas-alt">
+      <div className="relative rounded-2xl border border-line bg-canvas p-4 shadow-[0_8px_24px_rgba(51,51,51,0.08)]">
+        <div className="overflow-hidden rounded-xl border border-line bg-canvas-alt">
           <svg viewBox="0 0 400 320" className="h-auto w-full" role="presentation">
             {/* sky wash */}
             <rect width="400" height="320" fill="#FFFDF5" />
@@ -132,7 +132,7 @@ function HeroArtwork() {
         {/* Frame footer, like a gallery label. Right-aligned so the floating
             price chip, which overlaps the bottom-left corner, never covers it. */}
         <div className="mt-3 flex items-center justify-end gap-3 px-1">
-          <span className="text-xs font-bold uppercase tracking-[0.14em] text-ink-faint">
+          <span className="text-sm text-ink-muted">
             OnerLab · Астана
           </span>
           <span className="flex gap-1.5">
@@ -144,11 +144,11 @@ function HeroArtwork() {
       </div>
 
       {/* Floating price chip */}
-      <div className="absolute -bottom-6 -left-4 rotate-[-4deg] rounded-2xl bg-ink px-5 py-3 text-white shadow-[0_14px_30px_rgba(51,51,51,0.28)]">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-brand">
+      <div className="absolute -bottom-6 -left-4 rounded-xl bg-ink px-5 py-3 text-white">
+        <p className="text-sm text-brand">
           Пробный урок
         </p>
-        <p className="text-xl font-extrabold">{pricing.trialLabel}</p>
+        <p className="text-xl font-semibold">{pricing.trialLabel}</p>
       </div>
     </div>
   );

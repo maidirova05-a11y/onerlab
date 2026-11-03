@@ -1,4 +1,4 @@
-import { ArrowRightIcon, CheckIcon, SparkIcon } from '@/components/icons';
+import { ArrowRightIcon, CheckIcon } from '@/components/icons';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
@@ -31,10 +31,10 @@ export function Program() {
               <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2">
                 {program.details.map((detail) => (
                   <div key={detail.label} className="bg-canvas p-5">
-                    <dt className="text-xs font-bold uppercase tracking-[0.14em] text-ink-muted">
+                    <dt className="text-sm text-ink-muted">
                       {detail.label}
                     </dt>
-                    <dd className="mt-1.5 text-base font-bold text-ink">{detail.value}</dd>
+                    <dd className="mt-1.5 text-base font-semibold text-ink">{detail.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -42,7 +42,7 @@ export function Program() {
 
             <Reveal delay={100}>
               <div className="rounded-card border border-line bg-canvas-alt p-6 sm:p-8">
-                <h3 className="font-display text-lg font-bold text-ink">Чему научится ребенок</h3>
+                <h3 className="font-display text-lg font-semibold text-ink">Чему научится ребенок</h3>
                 <ul className="mt-5 space-y-3.5">
                   {program.curriculum.map((topic) => (
                     <li key={topic} className="flex items-start gap-3">
@@ -62,24 +62,22 @@ export function Program() {
           {/* --- Price card --- */}
           <Reveal delay={160}>
             <div className="lg:sticky lg:top-28">
-              <div className="texture-canvas relative overflow-hidden rounded-card border-2 border-ink bg-canvas p-7 shadow-[0_20px_50px_rgba(51,51,51,0.1)] sm:p-8">
-                <span aria-hidden className="paint-blob right-[-25%] top-[-30%] h-52 w-52 bg-brand/35" />
-
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-muted">
+              <div className="relative overflow-hidden rounded-card border-2 border-ink bg-canvas p-7 shadow-[0_8px_24px_rgba(51,51,51,0.08)] sm:p-8">
+                <p className="text-sm text-ink-muted">
                   Основной курс
                 </p>
-                <h3 className="mt-2 font-display text-2xl font-extrabold text-ink">
+                <h3 className="mt-2 font-display text-2xl font-semibold text-ink">
                   «{program.courseName}»
                 </h3>
 
                 <div className="mt-7 flex items-baseline gap-2">
-                  <span className="font-display text-4xl font-extrabold leading-none text-ink sm:text-5xl">
+                  <span className="font-display text-4xl font-semibold leading-none text-ink sm:text-5xl">
                     {program.price.amount}
                   </span>
                   <span className="text-sm font-semibold text-ink-muted">{program.price.period}</span>
                 </div>
 
-                <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-brand-soft px-3.5 py-1.5 text-xs font-bold text-ink">
+                <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-brand-soft px-3.5 py-1.5 text-xs font-semibold text-ink">
                   <CheckIcon className="h-3.5 w-3.5" />
                   {program.price.note}
                 </p>
@@ -102,17 +100,9 @@ export function Program() {
           {program.offers.map((offer, index) => (
             <Reveal as="li" key={offer.title} delay={index * 90}>
               <article className="relative h-full overflow-hidden rounded-card bg-ink p-6 text-white sm:p-8">
-                <span
-                  aria-hidden
-                  className="paint-blob right-[-18%] bottom-[-40%] h-44 w-44 bg-brand/25"
-                />
+                <span className="text-sm font-medium text-brand">{offer.badge}</span>
 
-                <span className="inline-flex items-center gap-2 rounded-pill bg-brand px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wide text-ink">
-                  <SparkIcon className="h-3.5 w-3.5" />
-                  {offer.badge}
-                </span>
-
-                <h3 className="mt-5 font-display text-xl font-extrabold leading-snug sm:text-2xl">
+                <h3 className="mt-5 font-display text-xl font-semibold leading-snug sm:text-2xl">
                   {offer.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/75">{offer.description}</p>
